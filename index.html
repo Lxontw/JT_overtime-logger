@@ -3,204 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>通用加班登記系統</title>
+    <title>智慧加班登記系統</title>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f0f2f5;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* 改為上方對齊，避免內容多時被切掉 */
             min-height: 100vh;
             margin: 0;
+            padding: 20px 0;
         }
         .container {
             background: white;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 420px;
             position: relative;
         }
-        h2 { text-align: center; color: #333; margin-bottom: 1.5rem; }
+        h2 { text-align: center; color: #333; margin: 0 0 1.5rem 0; font-size: 1.5rem;}
+        
+        /* 表單元件優化 */
         .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; color: #555; font-weight: bold; }
-        input, textarea {
-            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;
-            box-sizing: border-box; font-size: 16px;
+        label { display: block; margin-bottom: 0.4rem; color: #555; font-weight: 600; font-size: 0.9rem;}
+        input, textarea, select {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+            box-sizing: border-box; font-size: 16px; background: #fff;
+            appearance: none; /* 移除原生樣式 */
         }
-        button {
-            width: 100%; padding: 12px; background-color: #007bff; color: white;
-            border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background 0.3s;
-        }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #ccc; }
-        button.secondary { background-color: #6c757d; margin-top: 10px; }
-        button.secondary:hover { background-color: #5a6268; }
-        
-        .msg { text-align: center; margin-top: 1rem; font-size: 14px; }
-        .success { color: green; }
-        .error { color: red; }
+        input:focus, textarea:focus, select:focus { border-color: #007bff; outline: none; }
 
-        /* 設定畫面樣式 */
-        #setupPanel { display: none; }
-        #mainPanel { display: none; }
+        /* 按鈕樣式 */
+        .btn-primary {
+            width: 100%; padding: 14px; background-color: #007bff; color: white;
+            border: none; border-radius: 8px; font-size: 16px; font-weight: bold;
+            cursor: pointer; transition: background 0.2s; margin-top: 10px;
+        }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; }
         
+        /* OCR 按鈕 */
+        .ocr-btn {
+            background-color: #6f42c1; color: white; border: none; 
+            padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;
+            margin-left: auto; display: inline-block;
+        }
+        .label-row { display: flex; justify-content: space-between; align-items: center; }
+
+        /* 分頁籤 (Tabs) */
+        .tabs { display: flex; margin-bottom: 1rem; background: #e9ecef; border-radius: 8px; padding: 4px; }
+        .tab {
+            flex: 1; text-align: center; padding: 10px; cursor: pointer;
+            border-radius: 6px; color: #666; font-weight: 500; transition: 0.3s;
+        }
+        .tab.active { background: white; color: #007bff; shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* 設定按鈕 */
         .settings-btn {
             position: absolute; top: 15px; right: 15px;
-            background: none; border: none; color: #999; cursor: pointer; font-size: 20px; width: auto; padding: 0;
+            background: none; border: none; color: #aaa; cursor: pointer; font-size: 20px; padding: 5px;
         }
-        .settings-btn:hover { color: #333; background: none;}
+
+        /* 隱藏/顯示控制 */
+        .hidden { display: none; }
+        
+        /* 訊息框 */
+        .msg { text-align: center; margin-top: 1rem; font-size: 14px; padding: 10px; border-radius: 6px;}
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .loading-ocr { color: #6f42c1; font-size: 12px; margin-top: 5px;}
+
+        /* OCR 預覽圖 */
+        #ocrPreview { max-width: 100%; margin-top: 10px; border-radius: 6px; display: none;}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <button class="settings-btn" onclick="showSetup()" title="重新設定連結">⚙️</button>
+    <button class="settings-btn" onclick="showPanel('setupPanel')">⚙️</button>
 
-    <div id="setupPanel">
-        <h2>🛠️ 初次設定</h2>
-        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-            請輸入您個人 Google Sheet 的 GAS 網頁應用程式網址 (API Url)。<br>
-            <span style="font-size: 12px; color: #999;">(只需設定一次，系統會記憶)</span>
-        </p>
+    <div id="setupPanel" class="hidden">
+        <h2>🛠️ 系統設定</h2>
         <div class="form-group">
-            <label for="apiUrl">GAS 網址</label>
-            <input type="text" id="apiUrl" placeholder="https://script.google.com/..." required>
+            <label>GAS 網址 (API URL)</label>
+            <input type="text" id="apiUrl" placeholder="https://script.google.com/..." style="font-size: 12px;">
         </div>
-        <button onclick="saveSettings()">儲存並開始使用</button>
+        <div class="form-group">
+            <label>標準下班時間 (常規模式起始時間)</label>
+            <input type="time" id="stdOffTime" value="17:30">
+        </div>
+        <div class="form-group">
+            <label>常用加班事由 (用逗號分隔)</label>
+            <textarea id="commonReasons" rows="3">專案趕工,部門會議,客戶需求處理,緊急維修</textarea>
+        </div>
+        <button class="btn-primary" onclick="saveSettings()">儲存設定</button>
+        <button class="btn-primary" style="background:#6c757d; margin-top:10px;" onclick="showPanel('mainPanel')">返回</button>
     </div>
 
     <div id="mainPanel">
-        <h2>⏰ 加班登記表</h2>
+        <h2>⏰ 加班登記</h2>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchMode('quick')">🚀 快速打卡</div>
+            <div class="tab" onclick="switchMode('custom')">🛠️ 自訂時段</div>
+        </div>
+
         <form id="overtimeForm">
             <div class="form-group">
-                <label for="name">姓名</label>
-                <input type="text" id="name" name="name" placeholder="請輸入姓名" required>
+                <label>姓名</label>
+                <input type="text" id="name" name="name" required>
             </div>
 
             <div class="form-group">
-                <label for="date">日期</label>
+                <label>日期</label>
                 <input type="date" id="date" name="date" required>
             </div>
 
-            <div class="form-group">
-                <label>加班時間</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="time" id="startTime" name="startTime" required>
-                    <span style="align-self: center;">至</span>
-                    <input type="time" id="endTime" name="endTime" required>
+            <div id="quickTimeGroup">
+                <div class="form-group">
+                    <label>加班至 (從 <span id="displayStdTime">17:30</span> 開始)</label>
+                    <input type="time" id="quickEndTime" onchange="syncTime()">
+                </div>
+            </div>
+
+            <div id="customTimeGroup" class="hidden">
+                <div class="form-group">
+                    <label>完整時段</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="time" id="startTime" name="startTime">
+                        <span style="align-self: center;">~</span>
+                        <input type="time" id="endTime" name="endTime">
+                    </div>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="reason">加班事由</label>
-                <textarea id="reason" name="reason" rows="3" placeholder="專案趕工、會議..." required></textarea>
+                <div class="label-row">
+                    <label>加班事由</label>
+                    <div style="position: relative;">
+                        <input type="file" id="ocrInput" accept="image/*" style="display: none;" onchange="handleOCR(this)">
+                        <button type="button" class="ocr-btn" onclick="document.getElementById('ocrInput').click()">📷 拍照辨識</button>
+                    </div>
+                </div>
+                
+                <select id="reasonSelect" onchange="handleReasonSelect()" style="margin-bottom: 8px;">
+                    <option value="" disabled selected>-- 選擇常用事由 --</option>
+                    </select>
+                
+                <textarea id="reason" name="reason" rows="2" placeholder="詳細說明..." required></textarea>
+                <div id="ocrStatus" class="loading-ocr"></div>
+                <img id="ocrPreview">
             </div>
 
-            <button type="submit" id="submitBtn">送出登記</button>
-            <div id="message" class="msg"></div>
+            <button type="submit" id="submitBtn" class="btn-primary">送出登記</button>
+            <div id="message" class="msg" style="display:none;"></div>
         </form>
     </div>
 </div>
 
 <script>
-    // DOM 元素
-    const setupPanel = document.getElementById('setupPanel');
-    const mainPanel = document.getElementById('mainPanel');
-    const apiUrlInput = document.getElementById('apiUrl');
-    const form = document.getElementById('overtimeForm');
-    const msgDiv = document.getElementById('message');
-    const submitBtn = document.getElementById('submitBtn');
+    // --- 全域變數與初始化 ---
+    const CONFIG = {
+        gasUrl: '',
+        stdTime: '17:30',
+        reasons: ['專案趕工', '部門會議']
+    };
 
-    // 初始化：檢查是否已經存過網址
-    checkConfig();
+    // DOM 元素載入
+    const els = {
+        setup: document.getElementById('setupPanel'),
+        main: document.getElementById('mainPanel'),
+        apiUrl: document.getElementById('apiUrl'),
+        stdOffTime: document.getElementById('stdOffTime'),
+        commonReasons: document.getElementById('commonReasons'),
+        form: document.getElementById('overtimeForm'),
+        name: document.getElementById('name'),
+        date: document.getElementById('date'),
+        quickGroup: document.getElementById('quickTimeGroup'),
+        customGroup: document.getElementById('customTimeGroup'),
+        quickEndTime: document.getElementById('quickEndTime'),
+        startTime: document.getElementById('startTime'),
+        endTime: document.getElementById('endTime'),
+        reasonSelect: document.getElementById('reasonSelect'),
+        reason: document.getElementById('reason'),
+        msg: document.getElementById('message'),
+        submitBtn: document.getElementById('submitBtn'),
+        displayStdTime: document.getElementById('displayStdTime'),
+        ocrStatus: document.getElementById('ocrStatus'),
+        ocrPreview: document.getElementById('ocrPreview')
+    };
 
-    function checkConfig() {
-        const savedUrl = localStorage.getItem('user_gas_url');
-        if (savedUrl) {
-            // 有存過，顯示主畫面
-            setupPanel.style.display = 'none';
-            mainPanel.style.display = 'block';
+    // 啟動時執行
+    init();
+
+    function init() {
+        loadConfig();
+        // 設定今天日期
+        els.date.valueAsDate = new Date();
+        // 載入上次姓名
+        els.name.value = localStorage.getItem('ot_username') || '';
+        
+        // 檢查是否需要初始設定
+        if (!CONFIG.gasUrl) {
+            showPanel('setupPanel');
         } else {
-            // 沒存過，顯示設定畫面
-            setupPanel.style.display = 'block';
-            mainPanel.style.display = 'none';
+            showPanel('mainPanel');
         }
+        
+        updateReasonOptions();
     }
 
-    // 儲存設定功能
+    // --- 設定相關邏輯 ---
+    function loadConfig() {
+        CONFIG.gasUrl = localStorage.getItem('user_gas_url') || '';
+        CONFIG.stdTime = localStorage.getItem('user_std_time') || '17:30';
+        const savedReasons = localStorage.getItem('user_reasons');
+        if (savedReasons) {
+            CONFIG.reasons = savedReasons.split(',');
+        }
+
+        // 填入設定畫面的欄位
+        els.apiUrl.value = CONFIG.gasUrl;
+        els.stdOffTime.value = CONFIG.stdTime;
+        els.commonReasons.value = CONFIG.reasons.join(',');
+        els.displayStdTime.textContent = CONFIG.stdTime;
+    }
+
     function saveSettings() {
-        const url = apiUrlInput.value.trim();
+        const url = els.apiUrl.value.trim();
         if (!url.startsWith('https://script.google.com/')) {
-            alert('網址格式錯誤！必須以 https://script.google.com/ 開頭');
+            alert('網址格式錯誤！需為 https://script.google.com/ 開頭');
             return;
         }
+        
         localStorage.setItem('user_gas_url', url);
-        checkConfig(); // 重新整理畫面
-        alert('設定成功！以後可以直接使用了。');
+        localStorage.setItem('user_std_time', els.stdOffTime.value);
+        // 處理全形逗號
+        const reasonsStr = els.commonReasons.value.replace(/，/g, ',');
+        localStorage.setItem('user_reasons', reasonsStr);
+
+        loadConfig(); // 重新載入記憶體
+        updateReasonOptions(); // 更新選單
+        alert('設定已儲存！');
+        showPanel('mainPanel');
     }
 
-    // 重新顯示設定畫面 (點擊齒輪時)
-    function showSetup() {
-        if(confirm('確定要重新設定 GAS 網址嗎？')) {
-            apiUrlInput.value = localStorage.getItem('user_gas_url') || '';
-            setupPanel.style.display = 'block';
-            mainPanel.style.display = 'none';
-            msgDiv.textContent = '';
+    function showPanel(panelId) {
+        els.setup.classList.add('hidden');
+        els.main.classList.add('hidden');
+        document.getElementById(panelId).classList.remove('hidden');
+    }
+
+    // --- 模式切換與時間同步 ---
+    function switchMode(mode) {
+        // 更新 Tab 樣式
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+
+        if (mode === 'quick') {
+            els.quickGroup.classList.remove('hidden');
+            els.customGroup.classList.add('hidden');
+            // 快速模式下，起始時間強制設為標準時間
+            els.startTime.value = CONFIG.stdTime;
+            // 必填屬性切換 (避免瀏覽器驗證隱藏欄位)
+            els.quickEndTime.required = true;
+            els.startTime.required = false;
+            els.endTime.required = false;
+        } else {
+            els.quickGroup.classList.add('hidden');
+            els.customGroup.classList.remove('hidden');
+            // 切換到自訂模式，可能需要清空或保留
+            els.quickEndTime.required = false;
+            els.startTime.required = true;
+            els.endTime.required = true;
         }
     }
 
-    // --- 以下為表單送出邏輯 (與之前相同，但 URL 改為讀取變數) ---
+    // 當快速模式的時間改變時，同步寫入隱藏的正式欄位
+    function syncTime() {
+        // 在 submit 前我們主要依賴 startTime 和 endTime 欄位的值
+        // 所以快速模式下，要把值塞進 endTime
+        els.endTime.value = els.quickEndTime.value;
+    }
 
-    // 自動填入今天的日期
-    document.getElementById('date').valueAsDate = new Date();
-    // 讀取上次姓名
-    const savedName = localStorage.getItem('ot_username');
-    if(savedName) document.getElementById('name').value = savedName;
+    // --- 事由選單邏輯 ---
+    function updateReasonOptions() {
+        els.reasonSelect.innerHTML = '<option value="" disabled selected>-- 選擇常用事由 --</option>';
+        CONFIG.reasons.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r;
+            opt.textContent = r;
+            els.reasonSelect.appendChild(opt);
+        });
+        // 加入一個清除/手動選項
+        const clearOpt = document.createElement('option');
+        clearOpt.value = "";
+        clearOpt.textContent = "✏️ 手動輸入 / 清除";
+        els.reasonSelect.appendChild(clearOpt);
+    }
 
-    form.addEventListener('submit', e => {
+    function handleReasonSelect() {
+        const val = els.reasonSelect.value;
+        if (val) {
+            els.reason.value = val;
+        } else {
+            els.reason.value = "";
+            els.reason.focus();
+        }
+    }
+
+    // --- OCR (拍照辨識) 邏輯 ---
+    function handleOCR(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        els.ocrStatus.textContent = "⏳ 正在讀取並分析圖片文字，請稍候 (初次需下載語言包)...";
+        els.ocrStatus.style.display = "block";
+        
+        // 顯示預覽
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            els.ocrPreview.src = e.target.result;
+            els.ocrPreview.style.display = "block";
+        }
+        reader.readAsDataURL(file);
+
+        // 使用 Tesseract.js 進行辨識 (繁體中文 chi_tra)
+        Tesseract.recognize(
+            file,
+            'chi_tra', 
+            { 
+                logger: m => {
+                    if(m.status === 'recognizing text') {
+                        els.ocrStatus.textContent = `⏳ 辨識中... ${(m.progress * 100).toFixed(0)}%`;
+                    }
+                }
+            }
+        ).then(({ data: { text } }) => {
+            // 處理辨識結果：去除過多空白
+            const cleanText = text.replace(/\s+/g, ' ').trim();
+            
+            // 附加到現有內容後方
+            const currentVal = els.reason.value;
+            els.reason.value = currentVal ? currentVal + " " + cleanText : cleanText;
+            
+            els.ocrStatus.textContent = "✅ 辨識完成！";
+            setTimeout(() => { 
+                els.ocrStatus.style.display = 'none'; 
+                els.ocrPreview.style.display = 'none';
+            }, 3000);
+        }).catch(err => {
+            console.error(err);
+            els.ocrStatus.textContent = "❌ 辨識失敗，請重試或手動輸入。";
+        });
+    }
+
+    // --- 表單送出 ---
+    els.form.addEventListener('submit', e => {
         e.preventDefault();
         
-        // 從 LocalStorage 獲取當前使用者的 URL
-        const currentGasUrl = localStorage.getItem('user_gas_url');
-        if (!currentGasUrl) {
-            alert('系統錯誤：找不到 GAS 網址，請重新設定。');
-            showSetup();
+        // 確保時間值正確 (若是快速模式，再次確保 startTime 正確)
+        if (!els.customGroup.classList.contains('hidden')) {
+            // 自訂模式：值已經在 input 裡
+        } else {
+            // 快速模式：同步值
+            els.startTime.value = CONFIG.stdTime;
+            els.endTime.value = els.quickEndTime.value;
+        }
+
+        if (!els.startTime.value || !els.endTime.value) {
+            alert('請填寫完整的時間！');
             return;
         }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = '資料傳送中...';
-        msgDiv.textContent = '';
-        msgDiv.className = 'msg';
+        els.submitBtn.disabled = true;
+        els.submitBtn.textContent = '資料傳送中...';
+        els.msg.style.display = 'none';
 
-        localStorage.setItem('ot_username', document.getElementById('name').value);
+        // 記憶姓名
+        localStorage.setItem('ot_username', els.name.value);
 
-        const formData = new FormData(form);
+        const formData = new FormData(els.form);
         
-        fetch(currentGasUrl, {
+        fetch(CONFIG.gasUrl, {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
             if (data.result === 'success') {
-                msgDiv.textContent = '✅ 登記成功！已寫入您的 Google Sheet。';
-                msgDiv.classList.add('success');
-                document.getElementById('reason').value = '';
+                els.msg.textContent = '✅ 登記成功！';
+                els.msg.className = 'msg success';
+                els.msg.style.display = 'block';
+                // 清空非保留欄位
+                els.reason.value = '';
+                els.reasonSelect.value = '';
+                els.quickEndTime.value = '';
+                els.endTime.value = '';
             } else {
                 throw new Error(data.error);
             }
         })
         .catch(error => {
-            msgDiv.textContent = '❌ 發生錯誤：' + error.message;
-            msgDiv.classList.add('error');
+            els.msg.textContent = '❌ 錯誤：' + error.message;
+            els.msg.className = 'msg error';
+            els.msg.style.display = 'block';
         })
         .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.textContent = '送出登記';
+            els.submitBtn.disabled = false;
+            els.submitBtn.textContent = '送出登記';
         });
     });
 </script>
