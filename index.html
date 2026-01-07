@@ -1,355 +1,105 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI 加班登記 (除錯版)</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-
+<html>
+  <head>
+    <base target="_top">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5; display: flex; justify-content: center; align-items: flex-start;
-            min-height: 100vh; margin: 0; padding: 20px 0; touch-action: manipulation;
-        }
-        .container {
-            background: white; padding: 1.5rem; border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 420px; position: relative;
-        }
-        h2 { text-align: center; color: #333; margin: 0 0 1.5rem 0; font-size: 1.5rem;}
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.4rem; color: #555; font-weight: 600; font-size: 0.9rem;}
-        input, textarea, select {
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
-            box-sizing: border-box; font-size: 16px; background: #fff; appearance: none;
-        }
-        .time-hint { font-size: 0.85rem; color: #007bff; font-weight: bold; margin-top: 5px; display: block; text-align: right; }
-        .btn-primary, .btn-secondary {
-            width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold;
-            cursor: pointer; transition: background 0.2s; margin-top: 10px; color: white;
-        }
-        .btn-primary { background-color: #007bff; } .btn-primary:hover { background-color: #0056b3; }
-        .btn-secondary { background-color: #6c757d; } .btn-secondary:hover { background-color: #5a6268; }
-        .ocr-btn { background-color: #6f42c1; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }
-        .tabs { display: flex; margin-bottom: 1rem; background: #e9ecef; border-radius: 8px; padding: 4px; }
-        .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 6px; color: #666; font-weight: 500; }
-        .tab.active { background: white; color: #007bff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .settings-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; padding: 5px; color: #aaa;}
-        .hidden { display: none !important; }
-        
-        /* 訊息框樣式優化 */
-        .msg { 
-            text-align: left; margin-top: 1rem; font-size: 14px; padding: 15px; border-radius: 6px; 
-            position: relative; word-break: break-all; line-height: 1.5;
-        }
-        .success { background-color: #d4edda; color: #155724; } 
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        
-        /* 關閉按鈕樣式 */
-        .close-msg-btn {
-            position: absolute; top: 5px; right: 10px; cursor: pointer;
-            background: none; border: none; font-size: 18px; font-weight: bold; opacity: 0.6;
-        }
-        .close-msg-btn:hover { opacity: 1; }
-
-        .loading-ocr { color: #6f42c1; font-size: 12px; margin-top: 5px; font-weight: bold;}
-        #cropModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; flex-direction: column; }
-        .crop-container { flex: 1; overflow: hidden; position: relative; display: flex; justify-content: center; align-items: center; background: #333; }
-        #imageToCrop { max-width: 100%; max-height: 80vh; display: block; }
-        .crop-actions { padding: 15px; background: white; display: flex; gap: 10px; }
-        .cropper-view-box, .cropper-face { border-radius: 0; outline: 2px solid #fff; }
+      body { font-family: sans-serif; padding: 20px; text-align: center; }
+      #preview { max-width: 100%; max-height: 300px; margin: 10px 0; display: none; border: 1px solid #ccc; }
+      button { padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+      button:disabled { background: #ccc; }
+      #result { margin-top: 20px; white-space: pre-wrap; text-align: left; background: #f9f9f9; padding: 10px; border-radius: 5px; }
+      .loading { color: #666; font-style: italic; }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <h3>📸 加班事由拍照辨識</h3>
+    
+    <input type="file" id="fileInput" accept="image/*" capture="environment" style="margin-bottom: 10px;">
+    <br>
+    <img id="preview" />
+    <br>
+    <button id="uploadBtn" onclick="handleUpload()" disabled>開始辨識</button>
+    
+    <div id="result"></div>
 
-<div id="cropModal" class="hidden">
-    <div class="crop-container"><img id="imageToCrop" src=""></div>
-    <div class="crop-actions">
-        <button type="button" class="btn-secondary" onclick="cancelCrop()">取消</button>
-        <button type="button" class="btn-primary" onclick="confirmCrop()">✨ AI 雲端辨識</button>
-    </div>
-</div>
+    <script>
+      let compressedBase64 = "";
+      let fileType = "";
 
-<div class="container">
-    <button class="settings-btn" onclick="showPanel('setupPanel')">⚙️</button>
-
-    <div id="setupPanel" class="hidden">
-        <h2>🛠️ 系統設定</h2>
-        <div class="form-group">
-            <label>GAS 網址 (API URL)</label>
-            <input type="text" id="apiUrl" placeholder="https://script.google.com/..." style="font-size: 12px;">
-        </div>
-        <div class="form-group">
-            <label>標準下班時間</label>
-            <input type="time" id="stdOffTime" value="17:30" oninput="updateTimeLabel(this, 'stdTimeHint')">
-            <span id="stdTimeHint" class="time-hint">24H: 17:30</span>
-        </div>
-        <div class="form-group">
-            <label>常用事由</label>
-            <textarea id="commonReasons" rows="3">專案趕工,部門會議</textarea>
-        </div>
-        <button class="btn-primary" onclick="saveSettings()">儲存設定</button>
-        <button class="btn-secondary" onclick="showPanel('mainPanel')">返回</button>
-    </div>
-
-    <div id="mainPanel">
-        <h2>⏰ AI 加班登記</h2>
-        <div class="tabs">
-            <div class="tab active" onclick="switchMode('quick')">🚀 快速下班</div>
-            <div class="tab" onclick="switchMode('custom')">🛠️ 自訂區間</div>
-        </div>
-
-        <form id="overtimeForm">
-            <div class="form-group">
-                <label>姓名</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label>日期</label>
-                <input type="date" id="date" name="date" required>
-            </div>
-
-            <div id="quickTimeGroup">
-                <div class="form-group">
-                    <label>加班結束時間 (起: <span id="displayStdTime">17:30</span>)</label>
-                    <input type="time" id="quickEndTime" oninput="handleQuickTimeChange()">
-                    <span id="quickTimeHint" class="time-hint">請選擇時間</span>
-                </div>
-            </div>
-
-            <div id="customTimeGroup" class="hidden">
-                <div class="form-group">
-                    <label>開始時間</label>
-                    <input type="time" id="startTime" name="startTime" oninput="updateTimeLabel(this, 'startHint')">
-                    <span id="startHint" class="time-hint">--:--</span>
-                </div>
-                <div class="form-group">
-                    <label>結束時間</label>
-                    <input type="time" id="endTime" name="endTime" oninput="updateTimeLabel(this, 'endHint')">
-                    <span id="endHint" class="time-hint">--:--</span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="label-row" style="margin-bottom: 5px; justify-content: space-between;">
-                    <label style="margin-bottom: 0;">加班事由</label>
-                    <input type="file" id="ocrInput" accept="image/*" style="display: none;" onchange="prepareCrop(this)">
-                    <button type="button" class="ocr-btn" onclick="document.getElementById('ocrInput').click()">📷 拍照/AI 辨識</button>
-                </div>
-                
-                <select id="reasonSelect" onchange="handleReasonSelect()" style="margin-bottom: 8px;">
-                    <option value="" disabled selected>-- 選擇常用事由 --</option>
-                </select>
-                
-                <textarea id="reason" name="reason" rows="2" placeholder="詳細說明..." required></textarea>
-                <div id="ocrStatus" class="loading-ocr" style="display: none;"></div>
-            </div>
-
-            <button type="submit" id="submitBtn" class="btn-primary">送出登記</button>
-            
-            <div id="message" class="msg" style="display:none;">
-                <span id="msgText"></span>
-                <button type="button" class="close-msg-btn" onclick="closeMsg()">×</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    const CONFIG = { gasUrl: '', stdTime: '17:30', reasons: [] };
-    let cropper = null;
-
-    const els = {
-        setup: document.getElementById('setupPanel'), main: document.getElementById('mainPanel'),
-        cropModal: document.getElementById('cropModal'), imageToCrop: document.getElementById('imageToCrop'),
-        apiUrl: document.getElementById('apiUrl'), stdOffTime: document.getElementById('stdOffTime'),
-        stdTimeHint: document.getElementById('stdTimeHint'), commonReasons: document.getElementById('commonReasons'),
-        form: document.getElementById('overtimeForm'), name: document.getElementById('name'),
-        date: document.getElementById('date'), quickGroup: document.getElementById('quickTimeGroup'),
-        customGroup: document.getElementById('customTimeGroup'), quickEndTime: document.getElementById('quickEndTime'),
-        quickTimeHint: document.getElementById('quickTimeHint'), startTime: document.getElementById('startTime'),
-        endTime: document.getElementById('endTime'), startHint: document.getElementById('startHint'),
-        endHint: document.getElementById('endHint'), reasonSelect: document.getElementById('reasonSelect'),
-        reason: document.getElementById('reason'), 
-        msg: document.getElementById('message'), msgText: document.getElementById('msgText'),
-        submitBtn: document.getElementById('submitBtn'), displayStdTime: document.getElementById('displayStdTime'),
-        ocrStatus: document.getElementById('ocrStatus'), ocrInput: document.getElementById('ocrInput')
-    };
-
-    init();
-
-    function init() {
-        loadConfig();
-        els.date.valueAsDate = new Date();
-        els.name.value = localStorage.getItem('ot_username') || '';
-        if (!CONFIG.gasUrl) showPanel('setupPanel'); else showPanel('mainPanel');
-        updateReasonOptions();
-    }
-
-    // --- 訊息框控制 (新增) ---
-    function showMsg(text, type) {
-        els.msgText.innerHTML = text; // 支援 HTML 顯示換行
-        els.msg.className = 'msg ' + type;
-        els.msg.style.display = 'block';
-        
-        // 如果是成功訊息，3秒後自動消失；如果是錯誤訊息，不消失
-        if (type === 'success') {
-            setTimeout(() => { els.msg.style.display = 'none'; }, 3000);
-        }
-    }
-
-    function closeMsg() {
-        els.msg.style.display = 'none';
-    }
-
-    // --- AI OCR 流程 ---
-    function prepareCrop(input) {
-        const file = input.files[0];
+      // 監聽檔案選擇，進行預覽與壓縮
+      document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
         if (!file) return;
+        
+        fileType = file.type;
         const reader = new FileReader();
-        reader.onload = function(e) {
-            els.imageToCrop.src = e.target.result;
-            els.cropModal.classList.remove('hidden');
-            if(cropper) cropper.destroy();
-            cropper = new Cropper(els.imageToCrop, { viewMode: 1, dragMode: 'move', autoCropArea: 0.8 });
-        }
-        reader.readAsDataURL(file);
-        input.value = '';
-    }
-
-    function cancelCrop() {
-        els.cropModal.classList.add('hidden');
-        if(cropper) { cropper.destroy(); cropper = null; }
-    }
-
-    function confirmCrop() {
-        if (!cropper) return;
-        const canvas = cropper.getCroppedCanvas({ maxWidth: 800 });
-        cancelCrop();
-
-        els.ocrStatus.textContent = "🚀 正在傳送至 AI 雲端分析中...";
-        els.ocrStatus.style.display = "block";
-        closeMsg(); // 清除舊訊息
-
-        const base64Data = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-
-        const formData = new FormData();
-        formData.append('action', 'ocr');
-        formData.append('image', base64Data);
-
-        fetch(CONFIG.gasUrl, {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.result === 'success') {
-                const currentVal = els.reason.value;
-                els.reason.value = currentVal ? currentVal + " " + data.text : data.text;
-                els.ocrStatus.textContent = "✨ AI 辨識完成！";
-            } else {
-                throw new Error(data.error || 'Unknown error');
+        
+        reader.onload = function(event) {
+          const img = new Image();
+          img.onload = function() {
+            // --- 關鍵：前端壓縮邏輯 ---
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 設定最大寬度 (例如 1024px，對 OCR 來說很夠了)
+            const maxWidth = 1024;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
             }
-        })
-        .catch(err => {
-            console.error(err);
-            els.ocrStatus.textContent = "❌ 辨識失敗";
-            // 這裡顯示錯誤，且不會自動消失
-            showMsg("<b>辨識失敗：</b><br>" + err.message, "error");
-        })
-        .finally(() => {
-            setTimeout(() => { els.ocrStatus.style.display = 'none'; }, 2000);
-        });
-    }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // 轉成 Base64 (品質 0.7)
+            const dataUrl = canvas.toDataURL(fileType, 0.7);
+            
+            // 顯示預覽
+            const preview = document.getElementById('preview');
+            preview.src = dataUrl;
+            preview.style.display = 'inline-block';
+            
+            // 儲存壓縮後的資料 (去掉 data:image/xxx;base64, 前綴)
+            compressedBase64 = dataUrl.split(',')[1];
+            
+            document.getElementById('uploadBtn').disabled = false;
+            document.getElementById('result').innerText = "✅ 圖片已壓縮準備就緒 (" + Math.round(compressedBase64.length/1024) + " KB)";
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
 
-    // --- 一般功能 ---
-    function updateTimeLabel(input, hintId) {
-        document.getElementById(hintId).textContent = input.value ? `24H確認: ${input.value}` : '';
-    }
-    function handleQuickTimeChange() {
-        updateTimeLabel(els.quickEndTime, 'quickTimeHint');
-        els.endTime.value = els.quickEndTime.value;
-    }
-    function loadConfig() {
-        CONFIG.gasUrl = localStorage.getItem('user_gas_url') || '';
-        CONFIG.stdTime = localStorage.getItem('user_std_time') || '17:30';
-        els.stdOffTime.value = CONFIG.stdTime;
-        updateTimeLabel(els.stdOffTime, 'stdTimeHint');
-        const savedReasons = localStorage.getItem('user_reasons');
-        CONFIG.reasons = savedReasons ? savedReasons.split(',') : ['專案趕工', '部門會議'];
-        els.apiUrl.value = CONFIG.gasUrl;
-        els.commonReasons.value = CONFIG.reasons.join(',');
-        els.displayStdTime.textContent = CONFIG.stdTime;
-    }
-    function saveSettings() {
-        const url = els.apiUrl.value.trim();
-        if (!url.startsWith('https://script.google.com/')) { alert('網址格式錯誤'); return; }
-        localStorage.setItem('user_gas_url', url);
-        localStorage.setItem('user_std_time', els.stdOffTime.value);
-        localStorage.setItem('user_reasons', els.commonReasons.value.replace(/，/g, ','));
-        loadConfig(); updateReasonOptions();
-        alert('設定已儲存！'); showPanel('mainPanel');
-    }
-    function showPanel(panelId) {
-        els.setup.classList.add('hidden'); els.main.classList.add('hidden');
-        document.getElementById(panelId).classList.remove('hidden');
-    }
-    function switchMode(mode) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
-        if (mode === 'quick') {
-            els.quickGroup.classList.remove('hidden'); els.customGroup.classList.add('hidden');
-            els.startTime.value = CONFIG.stdTime;
-            els.quickEndTime.required = true; els.startTime.required = false; els.endTime.required = false;
-        } else {
-            els.quickGroup.classList.add('hidden'); els.customGroup.classList.remove('hidden');
-            els.quickEndTime.required = false; els.startTime.required = true; els.endTime.required = true;
-            els.startHint.textContent = els.startTime.value ? `24H確認: ${els.startTime.value}` : '';
-            els.endHint.textContent = els.endTime.value ? `24H確認: ${els.endTime.value}` : '';
-        }
-    }
-    function updateReasonOptions() {
-        els.reasonSelect.innerHTML = '<option value="" disabled selected>-- 選擇常用事由 --</option>';
-        CONFIG.reasons.forEach(r => {
-            const opt = document.createElement('option'); opt.value = r; opt.textContent = r;
-            els.reasonSelect.appendChild(opt);
-        });
-        const clearOpt = document.createElement('option'); clearOpt.value = ""; clearOpt.textContent = "✏️ 手動輸入 / 清除";
-        els.reasonSelect.appendChild(clearOpt);
-    }
-    function handleReasonSelect() {
-        const val = els.reasonSelect.value;
-        if (val) els.reason.value = val; else { els.reason.value = ""; els.reason.focus(); }
-    }
-
-    els.form.addEventListener('submit', e => {
-        e.preventDefault();
-        if (els.customGroup.classList.contains('hidden')) {
-            els.startTime.value = CONFIG.stdTime; els.endTime.value = els.quickEndTime.value;
-        }
-        if (!els.startTime.value || !els.endTime.value) { alert('請填寫完整的時間！'); return; }
+      function handleUpload() {
+        const btn = document.getElementById('uploadBtn');
+        const resultDiv = document.getElementById('result');
         
-        els.submitBtn.disabled = true; els.submitBtn.textContent = '傳送中...'; 
-        closeMsg(); // 清除舊訊息
-        
-        localStorage.setItem('ot_username', els.name.value);
+        btn.disabled = true;
+        btn.innerText = "辨識中...";
+        resultDiv.innerText = "🚀 正在傳送並辨識中，請稍候...";
 
-        const formData = new FormData(els.form);
-        fetch(CONFIG.gasUrl, { method: 'POST', body: formData })
-        .then(res => res.json())
-        .then(data => {
-            if (data.result === 'success') {
-                showMsg("✅ 登記成功！", "success");
-                els.reason.value = ''; els.reasonSelect.value = '';
-            } else { throw new Error(data.error); }
-        })
-        .catch(error => {
-            // 提交失敗的錯誤，手動關閉
-            showMsg("❌ 提交錯誤：<br>" + error.message, "error");
-        })
-        .finally(() => { els.submitBtn.disabled = false; els.submitBtn.textContent = '送出登記'; });
-    });
-</script>
-</body>
+        // 呼叫後端 Google Apps Script
+        google.script.run
+          .withSuccessHandler(function(response) {
+            btn.disabled = false;
+            btn.innerText = "開始辨識";
+            if (response.success) {
+              resultDiv.innerText = response.text;
+            } else {
+              resultDiv.innerText = "❌ 失敗：" + response.text;
+            }
+          })
+          .withFailureHandler(function(error) {
+            btn.disabled = false;
+            btn.innerText = "開始辨識";
+            resultDiv.innerText = "❌ 系統錯誤：" + error.message;
+          })
+          .processImage(compressedBase64, fileType);
+      }
+    </script>
+  </body>
 </html>
