@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>智慧加班登記 (含裁切OCR版)</title>
-    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+    <title>AI 加班登記 (Gemini版)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
     <style>
-        /* 基礎設定 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f0f2f5; display: flex; justify-content: center; align-items: flex-start;
@@ -43,7 +41,7 @@
         .success { background-color: #d4edda; color: #155724; } .error { background-color: #f8d7da; color: #721c24; }
         .loading-ocr { color: #6f42c1; font-size: 12px; margin-top: 5px; font-weight: bold;}
 
-        /* --- 裁切視窗樣式 --- */
+        /* Crop Modal */
         #cropModal {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); z-index: 9999;
@@ -52,26 +50,20 @@
         .crop-container {
             flex: 1; overflow: hidden; position: relative;
             display: flex; justify-content: center; align-items: center;
-            background: #333; /* 裁切背景色 */
+            background: #333;
         }
-        /* 限制圖片最大高度，確保按鈕區可見 */
         #imageToCrop { max-width: 100%; max-height: 80vh; display: block; }
-        .crop-actions {
-            padding: 15px; background: white; display: flex; gap: 10px;
-        }
-        /* CropperJS 自定義樣式覆蓋 */
+        .crop-actions { padding: 15px; background: white; display: flex; gap: 10px; }
         .cropper-view-box, .cropper-face { border-radius: 0; outline: 2px solid #fff; }
     </style>
 </head>
 <body>
 
 <div id="cropModal" class="hidden">
-    <div class="crop-container">
-        <img id="imageToCrop" src="" alt="Picture to crop">
-    </div>
+    <div class="crop-container"><img id="imageToCrop" src=""></div>
     <div class="crop-actions">
         <button type="button" class="btn-secondary" onclick="cancelCrop()">取消</button>
-        <button type="button" class="btn-primary" onclick="confirmCrop()">確認裁切並辨識</button>
+        <button type="button" class="btn-primary" onclick="confirmCrop()">✨ AI 雲端辨識</button>
     </div>
 </div>
 
@@ -85,12 +77,12 @@
             <input type="text" id="apiUrl" placeholder="https://script.google.com/..." style="font-size: 12px;">
         </div>
         <div class="form-group">
-            <label>標準下班時間 (24小時制)</label>
+            <label>標準下班時間</label>
             <input type="time" id="stdOffTime" value="17:30" oninput="updateTimeLabel(this, 'stdTimeHint')">
             <span id="stdTimeHint" class="time-hint">24H: 17:30</span>
         </div>
         <div class="form-group">
-            <label>常用加班事由 (用逗號分隔)</label>
+            <label>常用事由</label>
             <textarea id="commonReasons" rows="3">專案趕工,部門會議</textarea>
         </div>
         <button class="btn-primary" onclick="saveSettings()">儲存設定</button>
@@ -98,7 +90,7 @@
     </div>
 
     <div id="mainPanel">
-        <h2>⏰ 加班登記</h2>
+        <h2>⏰ AI 加班登記</h2>
         <div class="tabs">
             <div class="tab active" onclick="switchMode('quick')">🚀 快速下班</div>
             <div class="tab" onclick="switchMode('custom')">🛠️ 自訂區間</div>
@@ -139,7 +131,7 @@
                 <div class="label-row" style="margin-bottom: 5px; justify-content: space-between;">
                     <label style="margin-bottom: 0;">加班事由</label>
                     <input type="file" id="ocrInput" accept="image/*" style="display: none;" onchange="prepareCrop(this)">
-                    <button type="button" class="ocr-btn" onclick="document.getElementById('ocrInput').click()">📷 拍照/選圖裁切</button>
+                    <button type="button" class="ocr-btn" onclick="document.getElementById('ocrInput').click()">📷 拍照/AI 辨識</button>
                 </div>
                 
                 <select id="reasonSelect" onchange="handleReasonSelect()" style="margin-bottom: 8px;">
@@ -157,38 +149,23 @@
 </div>
 
 <script>
-    // --- 全域變數 ---
     const CONFIG = { gasUrl: '', stdTime: '17:30', reasons: [] };
-    let cropper = null; // 用於存放 Cropper 實體
+    let cropper = null;
 
-    // DOM 元素
     const els = {
-        setup: document.getElementById('setupPanel'),
-        main: document.getElementById('mainPanel'),
-        cropModal: document.getElementById('cropModal'),
-        imageToCrop: document.getElementById('imageToCrop'),
-        apiUrl: document.getElementById('apiUrl'),
-        stdOffTime: document.getElementById('stdOffTime'),
-        stdTimeHint: document.getElementById('stdTimeHint'),
-        commonReasons: document.getElementById('commonReasons'),
-        form: document.getElementById('overtimeForm'),
-        name: document.getElementById('name'),
-        date: document.getElementById('date'),
-        quickGroup: document.getElementById('quickTimeGroup'),
-        customGroup: document.getElementById('customTimeGroup'),
-        quickEndTime: document.getElementById('quickEndTime'),
-        quickTimeHint: document.getElementById('quickTimeHint'),
-        startTime: document.getElementById('startTime'),
-        endTime: document.getElementById('endTime'),
-        startHint: document.getElementById('startHint'),
-        endHint: document.getElementById('endHint'),
-        reasonSelect: document.getElementById('reasonSelect'),
-        reason: document.getElementById('reason'),
-        msg: document.getElementById('message'),
-        submitBtn: document.getElementById('submitBtn'),
-        displayStdTime: document.getElementById('displayStdTime'),
-        ocrStatus: document.getElementById('ocrStatus'),
-        ocrInput: document.getElementById('ocrInput')
+        setup: document.getElementById('setupPanel'), main: document.getElementById('mainPanel'),
+        cropModal: document.getElementById('cropModal'), imageToCrop: document.getElementById('imageToCrop'),
+        apiUrl: document.getElementById('apiUrl'), stdOffTime: document.getElementById('stdOffTime'),
+        stdTimeHint: document.getElementById('stdTimeHint'), commonReasons: document.getElementById('commonReasons'),
+        form: document.getElementById('overtimeForm'), name: document.getElementById('name'),
+        date: document.getElementById('date'), quickGroup: document.getElementById('quickTimeGroup'),
+        customGroup: document.getElementById('customTimeGroup'), quickEndTime: document.getElementById('quickEndTime'),
+        quickTimeHint: document.getElementById('quickTimeHint'), startTime: document.getElementById('startTime'),
+        endTime: document.getElementById('endTime'), startHint: document.getElementById('startHint'),
+        endHint: document.getElementById('endHint'), reasonSelect: document.getElementById('reasonSelect'),
+        reason: document.getElementById('reason'), msg: document.getElementById('message'),
+        submitBtn: document.getElementById('submitBtn'), displayStdTime: document.getElementById('displayStdTime'),
+        ocrStatus: document.getElementById('ocrStatus'), ocrInput: document.getElementById('ocrInput')
     };
 
     init();
@@ -201,109 +178,73 @@
         updateReasonOptions();
     }
 
-    // --- 核心：裁切與 OCR 流程 ---
-
-    // 1. 使用者選檔後，準備裁切
+    // --- AI OCR 流程 (透過 GAS 呼叫 Gemini) ---
     function prepareCrop(input) {
         const file = input.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(e) {
-            // 設定圖片來源
             els.imageToCrop.src = e.target.result;
-            // 顯示 Modal
             els.cropModal.classList.remove('hidden');
-            
-            // 如果已有 cropper 實體，先銷毀 (避免重複綁定)
-            if(cropper) { cropper.destroy(); }
-
-            // 初始化 Cropper
-            cropper = new Cropper(els.imageToCrop, {
-                viewMode: 1, // 限制裁切框在畫布內
-                dragMode: 'move', // 允許拖動圖片
-                autoCropArea: 0.8, // 初始裁切框大小
-                restore: false,
-                guides: true,
-                center: true,
-                highlight: false,
-                cropBoxMovable: true,
-                cropBoxResizable: true,
-                toggleDragModeOnDblclick: false,
-            });
+            if(cropper) cropper.destroy();
+            cropper = new Cropper(els.imageToCrop, { viewMode: 1, dragMode: 'move', autoCropArea: 0.8 });
         }
         reader.readAsDataURL(file);
-        input.value = ''; // 清空 input，允許重複選擇同一張圖
+        input.value = '';
     }
 
-    // 2. 取消裁切
     function cancelCrop() {
         els.cropModal.classList.add('hidden');
-        if(cropper) {
-            cropper.destroy();
-            cropper = null;
-        }
+        if(cropper) { cropper.destroy(); cropper = null; }
     }
 
-    // 3. 確認裁切並執行 OCR
     function confirmCrop() {
         if (!cropper) return;
-
-        // 取得裁切後的 Canvas
-        const canvas = cropper.getCroppedCanvas({
-            maxWidth: 1024, // 限制最大寬度以提升效能
-        });
-
-        // 關閉裁切視窗
+        // 壓縮圖片品質為 0.6 以加快傳輸
+        const canvas = cropper.getCroppedCanvas({ maxWidth: 800 });
         cancelCrop();
 
-        // 顯示 Loading
-        els.ocrStatus.textContent = "⏳ 正在辨識裁切區域 (初次需下載語言包)...";
+        els.ocrStatus.textContent = "🚀 正在傳送至 AI 雲端分析中...";
         els.ocrStatus.style.display = "block";
 
-        // 將 canvas 轉為 Blob 或 DataURL 供 Tesseract 使用
-        canvas.toBlob((blob) => {
-            Tesseract.recognize(
-                blob, // 傳入裁切後的圖片資料
-                'chi_tra', // 繁體中文
-                { 
-                    logger: m => {
-                        if(m.status === 'recognizing text') {
-                            els.ocrStatus.textContent = `⏳ OCR 辨識中... ${(m.progress * 100).toFixed(0)}%`;
-                        }
-                    }
-                }
-            ).then(({ data: { text } }) => {
-                // 清理結果：去除多餘空行與前後空白
-                const cleanText = text.replace(/[\r\n]+/g, ' ').trim();
-                if(cleanText) {
-                    const currentVal = els.reason.value;
-                    els.reason.value = currentVal ? currentVal + " " + cleanText : cleanText;
-                    els.ocrStatus.textContent = "✅ 辨識完成！";
-                } else {
-                    els.ocrStatus.textContent = "⚠️ 未辨識到文字，請重新調整裁切範圍。";
-                }
-                setTimeout(() => { els.ocrStatus.style.display = 'none'; }, 4000);
-            }).catch(err => {
-                console.error(err);
-                els.ocrStatus.textContent = "❌ 辨識失敗，請重試。";
-                setTimeout(() => { els.ocrStatus.style.display = 'none'; }, 4000);
-            });
-        }, 'image/jpeg', 0.9);
+        const base64Data = canvas.toDataURL('image/jpeg', 0.6).split(',')[1]; // 去除 header
+
+        // 建立 FormData 發送 OCR 請求
+        const formData = new FormData();
+        formData.append('action', 'ocr');
+        formData.append('image', base64Data);
+
+        fetch(CONFIG.gasUrl, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.result === 'success') {
+                const currentVal = els.reason.value;
+                els.reason.value = currentVal ? currentVal + " " + data.text : data.text;
+                els.ocrStatus.textContent = "✨ AI 辨識完成！";
+            } else {
+                throw new Error(data.error || 'Unknown error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            els.ocrStatus.textContent = "❌ 辨識失敗：" + err.message;
+        })
+        .finally(() => {
+            setTimeout(() => { els.ocrStatus.style.display = 'none'; }, 3000);
+        });
     }
 
-
-    // --- 其他輔助功能 (時間顯示, 設定, 表單) ---
+    // --- 一般功能 ---
     function updateTimeLabel(input, hintId) {
-        const hint = document.getElementById(hintId);
-        hint.textContent = input.value ? `24H確認: ${input.value}` : '';
+        document.getElementById(hintId).textContent = input.value ? `24H確認: ${input.value}` : '';
     }
-
     function handleQuickTimeChange() {
         updateTimeLabel(els.quickEndTime, 'quickTimeHint');
         els.endTime.value = els.quickEndTime.value;
     }
-
     function loadConfig() {
         CONFIG.gasUrl = localStorage.getItem('user_gas_url') || '';
         CONFIG.stdTime = localStorage.getItem('user_std_time') || '17:30';
@@ -315,24 +256,19 @@
         els.commonReasons.value = CONFIG.reasons.join(',');
         els.displayStdTime.textContent = CONFIG.stdTime;
     }
-
     function saveSettings() {
         const url = els.apiUrl.value.trim();
-        if (!url.startsWith('https://script.google.com/')) {
-            alert('網址格式錯誤！需為 https://script.google.com/ 開頭'); return;
-        }
+        if (!url.startsWith('https://script.google.com/')) { alert('網址格式錯誤'); return; }
         localStorage.setItem('user_gas_url', url);
         localStorage.setItem('user_std_time', els.stdOffTime.value);
         localStorage.setItem('user_reasons', els.commonReasons.value.replace(/，/g, ','));
         loadConfig(); updateReasonOptions();
         alert('設定已儲存！'); showPanel('mainPanel');
     }
-
     function showPanel(panelId) {
         els.setup.classList.add('hidden'); els.main.classList.add('hidden');
         document.getElementById(panelId).classList.remove('hidden');
     }
-
     function switchMode(mode) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         event.target.classList.add('active');
@@ -347,7 +283,6 @@
             els.endHint.textContent = els.endTime.value ? `24H確認: ${els.endTime.value}` : '';
         }
     }
-
     function updateReasonOptions() {
         els.reasonSelect.innerHTML = '<option value="" disabled selected>-- 選擇常用事由 --</option>';
         CONFIG.reasons.forEach(r => {
@@ -357,7 +292,6 @@
         const clearOpt = document.createElement('option'); clearOpt.value = ""; clearOpt.textContent = "✏️ 手動輸入 / 清除";
         els.reasonSelect.appendChild(clearOpt);
     }
-
     function handleReasonSelect() {
         const val = els.reasonSelect.value;
         if (val) els.reason.value = val; else { els.reason.value = ""; els.reason.focus(); }
@@ -369,14 +303,12 @@
             els.startTime.value = CONFIG.stdTime; els.endTime.value = els.quickEndTime.value;
         }
         if (!els.startTime.value || !els.endTime.value) { alert('請填寫完整的時間！'); return; }
-
-        els.submitBtn.disabled = true; els.submitBtn.textContent = '傳送中...';
-        els.msg.style.display = 'none';
+        els.submitBtn.disabled = true; els.submitBtn.textContent = '傳送中...'; els.msg.style.display = 'none';
         localStorage.setItem('ot_username', els.name.value);
 
         const formData = new FormData(els.form);
         fetch(CONFIG.gasUrl, { method: 'POST', body: formData })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
             if (data.result === 'success') {
                 els.msg.textContent = '✅ 登記成功！'; els.msg.className = 'msg success'; els.msg.style.display = 'block';
