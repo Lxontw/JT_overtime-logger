@@ -211,10 +211,20 @@
         toggleSettings();
     }
 
+// [修正] 解決第一次點擊出現空白的問題
     function toggleSettings() {
+        // 判斷目前是否正在顯示主畫面
         const isMain = els.main.style.display !== 'none';
-        els.main.style.display = isMain ? 'none' : 'block';
-        els.setup.classList.toggle('hidden', isMain);
+        
+        if (isMain) {
+            // 如果現在是主畫面 -> 切換到設定頁
+            els.main.style.display = 'none';       // 隱藏主畫面
+            els.setup.classList.remove('hidden');  // 移除 hidden (顯示設定頁)
+        } else {
+            // 如果現在是設定頁 -> 切換回主畫面
+            els.main.style.display = 'block';      // 顯示主畫面
+            els.setup.classList.add('hidden');     // 加入 hidden (隱藏設定頁)
+        }
     }
 
     window.setMode = function(mode) {
