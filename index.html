@@ -9,7 +9,7 @@
 
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; padding: 20px 10px; display: flex; justify-content: center; }
-        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; position: relative; }
         h2 { text-align: center; margin: 0 0 20px 0; color: #333; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 14px; }
@@ -52,15 +52,27 @@
     </div>
 </div>
 
-<div class="container" style="position: relative;">
+<div class="container">
     <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
     
     <div id="setupPanel" class="hidden">
         <h2>系統設定</h2>
         <div class="form-group">
+            <label>您的姓名 (用於自動填寫)</label>
+            <input type="text" id="userNameSetting" placeholder="例如：金城武">
+        </div>
+
+        <div class="form-group">
             <label>GAS 網址 (您的 API)</label>
             <input type="text" id="apiUrl" placeholder="https://script.google.com/macros/s/xxx/exec">
         </div>
+        
+        <div class="form-group">
+            <label>常用事由 (請用逗號分隔)</label>
+            <textarea id="customReasonsConfig" rows="3" placeholder="例如：交接輪值,專案趕工,部門會議"></textarea>
+            <div style="font-size:12px; color:#666; margin-top:4px;">* 修改後請按儲存，選單會自動更新</div>
+        </div>
+
         <div class="form-group">
             <label>標準上班時間 (起始)</label>
             <input type="time" id="stdStartTime" value="08:30">
@@ -108,12 +120,7 @@
                 
                 <select id="reasonSelect" onchange="this.value ? document.getElementById('reason').value=this.value : null" style="margin-bottom:8px;">
                     <option value="" selected disabled>-- 快速選擇 --</option>
-                    <option value="交接輪值">交接輪值</option>
-                    <option value="百貨類處理">百貨類處理</option>
-                    <option value="教科書處理">教科書處理</option>
-                    <option value="數位印刷">數位印刷</option>
-                    <option value="臨時急件">臨時急件</option>
-                </select>
+                    </select>
                 <textarea id="reason" rows="2" placeholder="輸入事由..." required></textarea>
                 <div id="ocrStatus" style="font-size:12px; color:#6f42c1; margin-top:5px;"></div>
             </div>
@@ -126,10 +133,15 @@
 </div>
 
 <script>
-    // 初始化
     const els = {
         setup: document.getElementById('setupPanel'), main: document.getElementById('mainPanel'),
         apiUrl: document.getElementById('apiUrl'), stdStart: document.getElementById('stdStartTime'), stdOff: document.getElementById('stdOffTime'),
+        
+        // [新增] 綁定新的設定欄位
+        userNameSetting: document.getElementById('userNameSetting'),
+        customReasonsConfig: document.getElementById('customReasonsConfig'),
+        reasonSelect: document.getElementById('reasonSelect'),
+
         date: document.getElementById('date'), startTime: document.getElementById('startTime'), endTime: document.getElementById('endTime'),
         startGroup: document.getElementById('startTimeGroup'), reason: document.getElementById('reason'),
         submitBtn: document.getElementById('submitBtn'), msg: document.getElementById('msgBox'),
@@ -138,29 +150,64 @@
     };
     
     let cropper = null;
-    let currentMode = 'regular';
 
-    // 啟動載入
     window.onload = () => {
         els.date.valueAsDate = new Date();
         loadConfig();
-        if(!els.apiUrl.value) toggleSettings(); // 沒設定就開設定頁
-        setMode('regular'); // 預設常規模式
+        if(!els.apiUrl.value) toggleSettings();
+        setMode('regular');
     };
 
-    // --- 設定與多用戶邏輯 ---
     function loadConfig() {
         els.apiUrl.value = localStorage.getItem('gas_url') || '';
         els.stdStart.value = localStorage.getItem('std_start') || '08:30';
         els.stdOff.value = localStorage.getItem('std_off') || '17:30';
+        
+        // [新增] 讀取姓名設定
+        els.userNameSetting.value = localStorage.getItem('user_name') || '';
+
+        // [新增] 讀取自訂事由，若無則使用預設值
+        const defaultReasons = "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
+        const savedReasons = localStorage.getItem('custom_reasons') || defaultReasons;
+        els.customReasonsConfig.value = savedReasons;
+        
+        // [新增] 渲染下拉選單
+        renderReasonOptions(savedReasons);
     }
     
+    // [新增] 根據設定產生下拉選單選項
+    function renderReasonOptions(reasonsStr) {
+        // 清空現有選項 (保留第一個提示)
+        els.reasonSelect.innerHTML = '<option value="" selected disabled>-- 快速選擇 --</option>';
+        
+        if (!reasonsStr) return;
+        
+        // 用逗號分隔並去除空白
+        const list = reasonsStr.split(/[,，\n]+/).map(s => s.trim()).filter(s => s);
+        
+        list.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item;
+            opt.textContent = item;
+            els.reasonSelect.appendChild(opt);
+        });
+    }
+
     function saveConfig() {
         const url = els.apiUrl.value.trim();
         if(!url) return alert('請輸入 GAS 網址');
+        
         localStorage.setItem('gas_url', url);
         localStorage.setItem('std_start', els.stdStart.value);
         localStorage.setItem('std_off', els.stdOff.value);
+        
+        // [新增] 儲存姓名與自訂事由
+        localStorage.setItem('user_name', els.userNameSetting.value.trim());
+        localStorage.setItem('custom_reasons', els.customReasonsConfig.value);
+
+        // [新增] 立即更新當前畫面的選單
+        renderReasonOptions(els.customReasonsConfig.value);
+
         toggleSettings();
     }
 
@@ -170,32 +217,29 @@
         els.setup.classList.toggle('hidden', isMain);
     }
 
-    // --- 模式切換邏輯 ---
     window.setMode = function(mode) {
-        currentMode = mode;
         document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
         event.target.classList.add('active');
 
         if (mode === 'regular') {
-            // 常規：起始時間隱藏，使用標準下班時間作為起始
             els.startGroup.classList.add('hidden');
             els.startTime.value = els.stdOff.value; 
         } else if (mode === 'overtime') {
-            // 特定加班：起始時間顯示，預設為標準下班時間 (可改)
             els.startGroup.classList.remove('hidden');
             els.startTime.value = els.stdOff.value;
         } else if (mode === 'special') {
-            // 特殊時段：起始時間顯示，預設為空或標準上班時間
             els.startGroup.classList.remove('hidden');
             els.startTime.value = els.stdStart.value;
         }
     };
 
-    // --- 表單送出 ---
     document.getElementById('otForm').onsubmit = (e) => {
         e.preventDefault();
         const url = localStorage.getItem('gas_url');
         if(!url) return alert('請先設定 API 網址');
+
+        // [新增] 從設定中取得姓名，若未設定則用 'User'
+        const userName = localStorage.getItem('user_name') || 'User';
 
         showMsg('傳送中...', '');
         els.submitBtn.disabled = true;
@@ -206,7 +250,9 @@
         formData.append('startTime', els.startTime.value);
         formData.append('endTime', els.endTime.value);
         formData.append('reason', els.reason.value);
-        formData.append('name', 'User'); // GAS端若需要可擴充
+        
+        // [修改] 將設定的姓名傳送給 GAS
+        formData.append('name', userName); 
 
         fetch(url, { method: 'POST', body: formData })
             .then(r => r.json())
@@ -214,6 +260,7 @@
                 if(d.result === 'success') {
                     showMsg('✅ 登記成功！', 'success');
                     els.reason.value = '';
+                    els.reasonSelect.value = ''; // 重置下拉選單
                 } else {
                     showMsg('❌ 錯誤：' + d.error, 'error');
                 }
@@ -229,7 +276,6 @@
         if(type === 'success') setTimeout(() => els.msg.style.display = 'none', 3000);
     }
 
-    // --- OCR 裁切與處理 ---
     window.openCrop = function(input) {
         if(!input.files[0]) return;
         const reader = new FileReader();
@@ -240,7 +286,7 @@
             cropper = new Cropper(els.imageToCrop, { viewMode: 1 });
         };
         reader.readAsDataURL(input.files[0]);
-        input.value = ''; // 重置
+        input.value = ''; 
     };
 
     window.closeCrop = function() {
