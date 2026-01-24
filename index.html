@@ -136,12 +136,9 @@
     const els = {
         setup: document.getElementById('setupPanel'), main: document.getElementById('mainPanel'),
         apiUrl: document.getElementById('apiUrl'), stdStart: document.getElementById('stdStartTime'), stdOff: document.getElementById('stdOffTime'),
-        
-        // [新增] 綁定新的設定欄位
         userNameSetting: document.getElementById('userNameSetting'),
         customReasonsConfig: document.getElementById('customReasonsConfig'),
         reasonSelect: document.getElementById('reasonSelect'),
-
         date: document.getElementById('date'), startTime: document.getElementById('startTime'), endTime: document.getElementById('endTime'),
         startGroup: document.getElementById('startTimeGroup'), reason: document.getElementById('reason'),
         submitBtn: document.getElementById('submitBtn'), msg: document.getElementById('msgBox'),
@@ -151,8 +148,23 @@
     
     let cropper = null;
 
+    /**
+     * [修改說明] window.onload 
+     * 1. 使用 new Date() 獲取開啟網頁當下的精確時間。
+     * 2. 日期欄位直接填入當天，不論是凌晨 3 點還是早上，都不會自動減一天。
+     * 3. 結束時間欄位自動填入開啟網頁時的當前時間，方便晚班下班直接送出。
+     */
     window.onload = () => {
-        els.date.valueAsDate = new Date();
+        const now = new Date();
+
+        // 設定日期：直接抓取當下裝置日期 (YYYY-MM-DD)
+        els.date.valueAsDate = now;
+
+        // 設定結束時間：直接抓取當下裝置時間 (HH:mm)
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        els.endTime.value = `${hours}:${minutes}`;
+
         loadConfig();
         if(!els.apiUrl.value) toggleSettings();
         setMode('regular');
@@ -162,29 +174,18 @@
         els.apiUrl.value = localStorage.getItem('gas_url') || '';
         els.stdStart.value = localStorage.getItem('std_start') || '08:30';
         els.stdOff.value = localStorage.getItem('std_off') || '17:30';
-        
-        // [新增] 讀取姓名設定
         els.userNameSetting.value = localStorage.getItem('user_name') || '';
 
-        // [新增] 讀取自訂事由，若無則使用預設值
         const defaultReasons = "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
         const savedReasons = localStorage.getItem('custom_reasons') || defaultReasons;
         els.customReasonsConfig.value = savedReasons;
-        
-        // [新增] 渲染下拉選單
         renderReasonOptions(savedReasons);
     }
     
-    // [新增] 根據設定產生下拉選單選項
     function renderReasonOptions(reasonsStr) {
-        // 清空現有選項 (保留第一個提示)
         els.reasonSelect.innerHTML = '<option value="" selected disabled>-- 快速選擇 --</option>';
-        
         if (!reasonsStr) return;
-        
-        // 用逗號分隔並去除空白
         const list = reasonsStr.split(/[,，\n]+/).map(s => s.trim()).filter(s => s);
-        
         list.forEach(item => {
             const opt = document.createElement('option');
             opt.value = item;
@@ -196,40 +197,33 @@
     function saveConfig() {
         const url = els.apiUrl.value.trim();
         if(!url) return alert('請輸入 GAS 網址');
-        
         localStorage.setItem('gas_url', url);
         localStorage.setItem('std_start', els.stdStart.value);
         localStorage.setItem('std_off', els.stdOff.value);
-        
-        // [新增] 儲存姓名與自訂事由
         localStorage.setItem('user_name', els.userNameSetting.value.trim());
         localStorage.setItem('custom_reasons', els.customReasonsConfig.value);
-
-        // [新增] 立即更新當前畫面的選單
         renderReasonOptions(els.customReasonsConfig.value);
-
         toggleSettings();
     }
 
-// [修正] 解決第一次點擊出現空白的問題
     function toggleSettings() {
-        // 判斷目前是否正在顯示主畫面
         const isMain = els.main.style.display !== 'none';
-        
         if (isMain) {
-            // 如果現在是主畫面 -> 切換到設定頁
-            els.main.style.display = 'none';       // 隱藏主畫面
-            els.setup.classList.remove('hidden');  // 移除 hidden (顯示設定頁)
+            els.main.style.display = 'none';
+            els.setup.classList.remove('hidden');
         } else {
-            // 如果現在是設定頁 -> 切換回主畫面
-            els.main.style.display = 'block';      // 顯示主畫面
-            els.setup.classList.add('hidden');     // 加入 hidden (隱藏設定頁)
+            els.main.style.display = 'block';
+            els.setup.classList.add('hidden');
         }
     }
 
+    /**
+     * [修改說明] setMode 
+     * 保持原本切換模式的起始時間邏輯，但不影響日期與結束時間。
+     */
     window.setMode = function(mode) {
         document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
+        if (event) event.target.classList.add('active');
 
         if (mode === 'regular') {
             els.startGroup.classList.add('hidden');
@@ -248,7 +242,6 @@
         const url = localStorage.getItem('gas_url');
         if(!url) return alert('請先設定 API 網址');
 
-        // [新增] 從設定中取得姓名，若未設定則用 'User'
         const userName = localStorage.getItem('user_name') || 'User';
 
         showMsg('傳送中...', '');
@@ -260,8 +253,6 @@
         formData.append('startTime', els.startTime.value);
         formData.append('endTime', els.endTime.value);
         formData.append('reason', els.reason.value);
-        
-        // [修改] 將設定的姓名傳送給 GAS
         formData.append('name', userName); 
 
         fetch(url, { method: 'POST', body: formData })
@@ -270,7 +261,7 @@
                 if(d.result === 'success') {
                     showMsg('✅ 登記成功！', 'success');
                     els.reason.value = '';
-                    els.reasonSelect.value = ''; // 重置下拉選單
+                    els.reasonSelect.value = '';
                 } else {
                     showMsg('❌ 錯誤：' + d.error, 'error');
                 }
