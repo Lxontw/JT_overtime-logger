@@ -1,45 +1,116 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JT 加班登記</title>
+    <title>加班記錄器</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; padding: 20px 10px; display: flex; justify-content: center; }
-        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; position: relative; }
-        h2 { text-align: center; margin: 0 0 20px 0; color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        /* --- 核心變數 --- */
+        :root {
+            --bg-color: #f0f2f5;
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --label-color: #555555;
+            --border-color: #dddddd;
+            --input-bg: #ffffff;
+            --shadow-color: rgba(0,0,0,0.08);
+            --tab-bg: #e9ecef;
+            --tab-active-bg: #ffffff;
+            --tab-active-color: #007bff;
+            --primary-btn-bg: linear-gradient(135deg, #007bff, #0056b3);
+            --secondary-btn-bg: #6c757d;
+            --ocr-btn-bg: #6f42c1;
+            --msg-success-bg: #d4edda; --msg-success-text: #155724;
+            --msg-error-bg: #f8d7da; --msg-error-text: #721c24;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --label-color: #aaaaaa;
+            --border-color: #333333;
+            --input-bg: #2d2d2d;
+            --shadow-color: rgba(0,0,0,0.3);
+            --tab-bg: #2d2d2d;
+            --tab-active-bg: #3a3a3a;
+            --tab-active-color: #58a6ff;
+            --primary-btn-bg: linear-gradient(135deg, #0a84ff, #0060df);
+            --secondary-btn-bg: #4a4a4a;
+            --ocr-btn-bg: #8a63d2;
+            --msg-success-bg: #053315; --msg-success-text: #75b798;
+            --msg-error-bg: #491217; --msg-error-text: #e99da5;
+        }
+
+        /* --- 字體放大設定 --- */
+        body.font-large { font-size: 1.15rem; }
+        body.font-extra-large { font-size: 1.3rem; }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-color); color: var(--text-color);
+            padding: 20px 10px; display: flex; justify-content: center; 
+            transition: all 0.3s; font-size: 1rem;
+        }
+        .container { 
+            background: var(--container-bg); padding: 1.5rem; border-radius: 16px; 
+            box-shadow: 0 4px 20px var(--shadow-color); 
+            width: 100%; max-width: 420px; position: relative;
+        }
+
+        /* --- 標題置中 --- */
+        header { margin-bottom: 1.5rem; text-align: center; }
+        h2 { margin: 0; font-weight: 700; }
+
+        /* --- 1. 功能圖示移至按鈕上方 --- */
+        .bottom-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 2rem; /* 拉開上方垂直間距 */
+            margin-bottom: 0.8rem;
+        }
         
-        /* 按鈕樣式 */
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; }
-        .btn-primary { background: #007bff; }
-        .btn-secondary { background: #6c757d; }
-        .ocr-btn { background: #6f42c1; padding: 5px 10px; font-size: 12px; border-radius: 4px; border: none; color: white; cursor: pointer; float: right; }
+        .control-icon {
+            cursor: pointer; background: var(--tab-bg);
+            width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;
+            border-radius: 50%; transition: transform 0.2s;
+            font-size: 1.2rem;
+        }
+        /* iOS 風格 AA 圖示文字 */
+        .font-icon { font-weight: bold; font-family: "Times New Roman", serif; font-size: 1rem; }
 
-        /* 模式切換 Tabs */
-        .mode-tabs { display: flex; gap: 5px; margin-bottom: 15px; background: #e9ecef; padding: 4px; border-radius: 8px; }
-        .mode-tab { flex: 1; text-align: center; padding: 8px; cursor: pointer; border-radius: 6px; font-size: 14px; color: #666; }
-        .mode-tab.active { background: white; color: #007bff; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--label-color); }
+        
+        input, select, textarea { 
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); 
+            background: var(--input-bg); color: var(--text-color);
+            border-radius: 10px; font-size: 1rem; box-sizing: border-box; 
+        }
 
-        /* 隱藏元素 */
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .ocr-btn { background: var(--ocr-btn-bg); padding: 6px 12px; border: none; font-size: 0.85em; border-radius: 6px; color: white; cursor: pointer; }
+
+        .btn { 
+            width: 100%; padding: 1rem; border: none; border-radius: 10px; 
+            font-size: 1.1em; font-weight: bold; cursor: pointer; color: white;
+        }
+        .btn-primary { background: var(--primary-btn-bg); }
+        .btn-secondary { background: var(--secondary-btn-bg); }
+
+        .mode-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; background: var(--tab-bg); padding: 4px; border-radius: 10px; }
+        .mode-tab { flex: 1; text-align: center; padding: 8px; cursor: pointer; border-radius: 8px; font-size: 0.9em; color: var(--label-color); }
+        .mode-tab.active { background: var(--tab-active-bg); color: var(--tab-active-color); font-weight: bold; box-shadow: 0 2px 4px var(--shadow-color); }
+
         .hidden { display: none !important; }
-        
-        /* 裁切視窗 */
         #cropModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 999; display: flex; flex-direction: column; }
         .crop-area { flex: 1; overflow: hidden; position: relative; }
-        .crop-actions { padding: 15px; background: white; display: flex; gap: 10px; }
-        
-        /* 訊息 */
-        .msg { padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 14px; display: none; }
-        .msg.success { background: #d4edda; color: #155724; }
-        .msg.error { background: #f8d7da; color: #721c24; }
-        
-        .settings-icon { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; opacity: 0.5; }
+        .crop-actions { padding: 15px; background: var(--container-bg); display: flex; gap: 10px; }
+        .msg { padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.9em; display: none; }
     </style>
 </head>
 <body>
@@ -53,40 +124,32 @@
 </div>
 
 <div class="container">
-    <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
+    <header>
+        <h2>加班記錄器</h2>
+    </header>
     
     <div id="setupPanel" class="hidden">
-        <h2>系統設定</h2>
         <div class="form-group">
             <label>您的姓名 (用於自動填寫)</label>
             <input type="text" id="userNameSetting" placeholder="例如：金城武">
         </div>
-
         <div class="form-group">
             <label>GAS 網址 (您的 API)</label>
             <input type="text" id="apiUrl" placeholder="https://script.google.com/macros/s/xxx/exec">
         </div>
-        
         <div class="form-group">
             <label>常用事由 (請用逗號 [,] 分隔)</label>
-            <textarea id="customReasonsConfig" rows="3" placeholder="例如：加班事由1,加班事由2,加班事由3"></textarea>
-            <div style="font-size:12px; color:#666; margin-top:4px;">* 修改後請按儲存，選單會自動更新</div>
+            <textarea id="customReasonsConfig" rows="3" placeholder="例如：加班事由1..."></textarea>
         </div>
 
-        <div class="form-group">
-            <label>標準上班時間 (起始)</label>
-            <input type="time" id="stdStartTime" value="08:30">
-        </div>
-        <div class="form-group">
-            <label>標準下班時間 (起始)</label>
-            <input type="time" id="stdOffTime" value="17:30">
+        <div class="bottom-controls">
+            <div class="control-icon" onclick="toggleFontSize()"><span class="font-icon">AA</span></div>
+            <div class="control-icon" onclick="toggleTheme()">🌓</div>
         </div>
         <button class="btn btn-primary" onclick="saveConfig()">儲存並返回</button>
     </div>
 
     <div id="mainPanel">
-        <h2>JT 加班登記</h2>
-        
         <div class="form-group">
             <label>日期</label>
             <input type="date" id="date" required>
@@ -100,34 +163,35 @@
 
         <form id="otForm">
             <input type="hidden" id="name" name="name">
-
             <div class="form-group" id="startTimeGroup" class="hidden">
                 <label>開始時間</label>
                 <input type="time" id="startTime">
             </div>
-
             <div class="form-group">
                 <label>結束時間</label>
                 <input type="time" id="endTime" required>
             </div>
 
             <div class="form-group">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <div class="label-row">
                     <label style="margin:0;">加班事由</label>
-                    <button type="button" class="ocr-btn" onclick="document.getElementById('fileIn').click()">📷 OCR</button>
+                    <button type="button" class="ocr-btn" onclick="document.getElementById('fileIn').click()">📷 OCR 辨識</button>
                 </div>
                 <input type="file" id="fileIn" accept="image/*" hidden onchange="openCrop(this)">
-                
                 <select id="reasonSelect" onchange="this.value ? document.getElementById('reason').value=this.value : null" style="margin-bottom:8px;">
                     <option value="" selected disabled>-- 快速選擇 --</option>
-                    </select>
-                <textarea id="reason" rows="2" placeholder="輸入事由..." required></textarea>
-                <div id="ocrStatus" style="font-size:12px; color:#6f42c1; margin-top:5px;"></div>
+                </select>
+                <textarea id="reason" rows="3" placeholder="輸入事由..." required></textarea>
+                <div id="ocrStatus" style="font-size:0.85em; color:var(--ocr-btn-bg); margin-top:5px; font-weight: 500;"></div>
             </div>
 
+            <div class="bottom-controls">
+                <div class="control-icon" onclick="toggleFontSize()"><span class="font-icon">AA</span></div>
+                <div class="control-icon" onclick="toggleTheme()">🌓</div>
+                <div class="control-icon" onclick="toggleSettings()">⚙️</div>
+            </div>
             <button type="submit" id="submitBtn" class="btn btn-primary">送出登記</button>
         </form>
-        
         <div id="msgBox" class="msg"></div>
     </div>
 </div>
@@ -135,7 +199,7 @@
 <script>
     const els = {
         setup: document.getElementById('setupPanel'), main: document.getElementById('mainPanel'),
-        apiUrl: document.getElementById('apiUrl'), stdStart: document.getElementById('stdStartTime'), stdOff: document.getElementById('stdOffTime'),
+        apiUrl: document.getElementById('apiUrl'),
         userNameSetting: document.getElementById('userNameSetting'),
         customReasonsConfig: document.getElementById('customReasonsConfig'),
         reasonSelect: document.getElementById('reasonSelect'),
@@ -148,22 +212,34 @@
     
     let cropper = null;
 
-    /**
-     * [修改說明] window.onload 
-     * 1. 使用 new Date() 獲取開啟網頁當下的精確時間。
-     * 2. 日期欄位直接填入當天，不論是凌晨 3 點還是早上，都不會自動減一天。
-     * 3. 結束時間欄位自動填入開啟網頁時的當前時間，方便晚班下班直接送出。
-     */
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+
+    const fontSizes = ['', 'font-large', 'font-extra-large'];
+    let currentFontIndex = parseInt(localStorage.getItem('fontSizeIdx') || 0);
+
+    function toggleFontSize() {
+        if (fontSizes[currentFontIndex]) document.body.classList.remove(fontSizes[currentFontIndex]);
+        currentFontIndex = (currentFontIndex + 1) % fontSizes.length;
+        if (fontSizes[currentFontIndex]) document.body.classList.add(fontSizes[currentFontIndex]);
+        localStorage.setItem('fontSizeIdx', currentFontIndex);
+    }
+
     window.onload = () => {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        if (fontSizes[currentFontIndex]) document.body.classList.add(fontSizes[currentFontIndex]);
+
         const now = new Date();
-
-        // 設定日期：直接抓取當下裝置日期 (YYYY-MM-DD)
-        els.date.valueAsDate = now;
-
-        // 設定結束時間：直接抓取當下裝置時間 (HH:mm)
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        els.endTime.value = `${hours}:${minutes}`;
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        els.date.value = `${year}-${month}-${day}`;
+        els.endTime.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
         loadConfig();
         if(!els.apiUrl.value) toggleSettings();
@@ -172,34 +248,22 @@
 
     function loadConfig() {
         els.apiUrl.value = localStorage.getItem('gas_url') || '';
-        els.stdStart.value = localStorage.getItem('std_start') || '08:30';
-        els.stdOff.value = localStorage.getItem('std_off') || '17:30';
         els.userNameSetting.value = localStorage.getItem('user_name') || '';
-
-        const defaultReasons = "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
-        const savedReasons = localStorage.getItem('custom_reasons') || defaultReasons;
+        const savedReasons = localStorage.getItem('custom_reasons') || "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
         els.customReasonsConfig.value = savedReasons;
         renderReasonOptions(savedReasons);
     }
     
     function renderReasonOptions(reasonsStr) {
         els.reasonSelect.innerHTML = '<option value="" selected disabled>-- 快速選擇 --</option>';
-        if (!reasonsStr) return;
-        const list = reasonsStr.split(/[,，\n]+/).map(s => s.trim()).filter(s => s);
-        list.forEach(item => {
-            const opt = document.createElement('option');
-            opt.value = item;
-            opt.textContent = item;
+        reasonsStr.split(/[,，\n]+/).map(s => s.trim()).filter(s => s).forEach(item => {
+            const opt = document.createElement('option'); opt.value = opt.textContent = item;
             els.reasonSelect.appendChild(opt);
         });
     }
 
     function saveConfig() {
-        const url = els.apiUrl.value.trim();
-        if(!url) return alert('請輸入 GAS 網址');
-        localStorage.setItem('gas_url', url);
-        localStorage.setItem('std_start', els.stdStart.value);
-        localStorage.setItem('std_off', els.stdOff.value);
+        localStorage.setItem('gas_url', els.apiUrl.value.trim());
         localStorage.setItem('user_name', els.userNameSetting.value.trim());
         localStorage.setItem('custom_reasons', els.customReasonsConfig.value);
         renderReasonOptions(els.customReasonsConfig.value);
@@ -208,32 +272,22 @@
 
     function toggleSettings() {
         const isMain = els.main.style.display !== 'none';
-        if (isMain) {
-            els.main.style.display = 'none';
-            els.setup.classList.remove('hidden');
-        } else {
-            els.main.style.display = 'block';
-            els.setup.classList.add('hidden');
-        }
+        els.main.style.display = isMain ? 'none' : 'block';
+        els.setup.classList.toggle('hidden', !isMain);
     }
 
-    /**
-     * [修改說明] setMode 
-     * 保持原本切換模式的起始時間邏輯，但不影響日期與結束時間。
-     */
     window.setMode = function(mode) {
         document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-        if (event) event.target.classList.add('active');
-
+        if (event && event.target.classList.contains('mode-tab')) event.target.classList.add('active');
+        const offTime = localStorage.getItem('std_off') || '17:30';
+        const startTime = localStorage.getItem('std_start') || '08:30';
+        
         if (mode === 'regular') {
             els.startGroup.classList.add('hidden');
-            els.startTime.value = els.stdOff.value; 
-        } else if (mode === 'overtime') {
+            els.startTime.value = offTime;
+        } else {
             els.startGroup.classList.remove('hidden');
-            els.startTime.value = els.stdOff.value;
-        } else if (mode === 'special') {
-            els.startGroup.classList.remove('hidden');
-            els.startTime.value = els.stdStart.value;
+            els.startTime.value = (mode === 'overtime') ? offTime : startTime;
         }
     };
 
@@ -241,38 +295,29 @@
         e.preventDefault();
         const url = localStorage.getItem('gas_url');
         if(!url) return alert('請先設定 API 網址');
-
-        const userName = localStorage.getItem('user_name') || 'User';
-
         showMsg('傳送中...', '');
         els.submitBtn.disabled = true;
-
         const formData = new FormData();
         formData.append('action', 'submit');
         formData.append('date', els.date.value);
         formData.append('startTime', els.startTime.value);
         formData.append('endTime', els.endTime.value);
         formData.append('reason', els.reason.value);
-        formData.append('name', userName); 
+        formData.append('name', localStorage.getItem('user_name') || 'User'); 
 
         fetch(url, { method: 'POST', body: formData })
-            .then(r => r.json())
-            .then(d => {
+            .then(r => r.json()).then(d => {
                 if(d.result === 'success') {
                     showMsg('✅ 登記成功！', 'success');
-                    els.reason.value = '';
-                    els.reasonSelect.value = '';
-                } else {
-                    showMsg('❌ 錯誤：' + d.error, 'error');
-                }
+                    els.reason.value = ''; els.reasonSelect.value = '';
+                } else showMsg('❌ 錯誤：' + d.error, 'error');
             })
-            .catch(err => showMsg('❌ 網路錯誤', 'error'))
+            .catch(() => showMsg('❌ 網路錯誤', 'error'))
             .finally(() => els.submitBtn.disabled = false);
     };
 
     function showMsg(txt, type) {
-        els.msg.textContent = txt;
-        els.msg.className = 'msg ' + type;
+        els.msg.textContent = txt; els.msg.className = 'msg ' + type;
         els.msg.style.display = 'block';
         if(type === 'success') setTimeout(() => els.msg.style.display = 'none', 3000);
     }
@@ -287,35 +332,21 @@
             cropper = new Cropper(els.imageToCrop, { viewMode: 1 });
         };
         reader.readAsDataURL(input.files[0]);
-        input.value = ''; 
     };
 
-    window.closeCrop = function() {
-        els.cropModal.classList.add('hidden');
-        if(cropper) cropper.destroy();
-    };
+    window.closeCrop = () => { els.cropModal.classList.add('hidden'); if(cropper) cropper.destroy(); };
 
-    window.doOCR = function() {
+    window.doOCR = () => {
         if(!cropper) return;
         els.ocrStatus.textContent = '辨識中...';
         const base64 = cropper.getCroppedCanvas({maxWidth: 800}).toDataURL('image/jpeg', 0.7).split(',')[1];
         closeCrop();
-
-        const formData = new FormData();
-        formData.append('action', 'ocr');
-        formData.append('image', base64);
-        
+        const formData = new FormData(); formData.append('action', 'ocr'); formData.append('image', base64);
         fetch(localStorage.getItem('gas_url'), { method: 'POST', body: formData })
-            .then(r => r.json())
-            .then(d => {
-                if(d.result === 'success') {
-                    els.reason.value = d.text;
-                    els.ocrStatus.textContent = '✨ 辨識完成';
-                } else {
-                    els.ocrStatus.textContent = '❌ 辨識失敗';
-                }
-            })
-            .catch(() => els.ocrStatus.textContent = '❌ 錯誤');
+            .then(r => r.json()).then(d => {
+                if(d.result === 'success') { els.reason.value = d.text; els.ocrStatus.textContent = '✨ 辨識完成'; }
+                else els.ocrStatus.textContent = '❌ 辨識失敗';
+            }).catch(() => els.ocrStatus.textContent = '❌ 錯誤');
     };
 </script>
 </body>
