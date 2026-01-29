@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>工作時間記錄表</title>
+    <title>加班記錄器</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
@@ -118,7 +118,7 @@
 <div class="container">
     <div id="mainView" class="view">
         <header>
-            <h2>工作時間記錄表</h2>
+            <h2>加班記錄器</h2>
             <div class="mode-tabs" style="margin: 0; padding: 3px; min-width: 130px; margin-bottom: 0;">
                 <div class="mode-tab active" id="theme-light" onclick="setTheme('light')">☀️ 亮色</div>
                 <div class="mode-tab" id="theme-dark" onclick="setTheme('dark')">🌙 深色</div>
@@ -288,12 +288,10 @@
     window.showConfig = () => { els.main.classList.add('hidden'); els.config.classList.remove('hidden'); };
     window.hideConfig = () => { els.config.classList.add('hidden'); els.main.classList.remove('hidden'); };
 
-    // 新增：設定主題並更新 UI 狀態
     window.setTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
         
-        // 更新右上角按鈕狀態
         document.getElementById('theme-light').classList.toggle('active', theme === 'light');
         document.getElementById('theme-dark').classList.toggle('active', theme === 'dark');
     };
@@ -322,7 +320,17 @@
         formData.append('action', 'submit'); 
         formData.append('date', document.getElementById('date').value);
         formData.append('name', userName);
-        formData.append('startTime', document.getElementById('startTime').value);
+        
+        // --- 核心修改：判斷模式決定是否傳送 StartTime ---
+        const isRegular = document.getElementById('mode-regular').classList.contains('active');
+        if (!isRegular) {
+            // 非常規模式 (特定加班/特殊時段)：傳送介面上的開始時間
+            formData.append('startTime', document.getElementById('startTime').value);
+        } else {
+            // 常規模式：起始不用 (傳送空字串，確保後端欄位對齊但無內容)
+            formData.append('startTime', '');
+        }
+
         formData.append('endTime', document.getElementById('endTime').value);
         formData.append('reason', els.reasonText.value);
 
