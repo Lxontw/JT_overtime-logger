@@ -1,5 +1,5 @@
-<!-- //0130  -->
-<!-- 名稱變更與UI風格與介面優化 -->
+<!-- //0202  -->
+<!-- 在「系統設定」頁面增加「⚠️ 重設 Google Sheet 表格範本」按鈕與防呆警語。 -->
 <!DOCTYPE html>
 <html lang="zh-TW" data-theme="light">
 <head>
@@ -106,7 +106,19 @@
         /* Font Slider Styling */
         .slider-group { margin-bottom: 20px; padding: 0 5px; }
         .slider-header { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; color: var(--label-color); margin-bottom: 6px; }
-        input[type="range"] { -webkit-appearance: none; width: 100%; background: var(--tab-bg); height: 6px; border-radius: 3px; outline: none; padding: 0; border: none; }
+        
+        /* [修正] 增加 appearance: none 以解決 VS Code 相容性警告 */
+        input[type="range"] { 
+            -webkit-appearance: none; 
+            appearance: none; /* 標準語法 */
+            width: 100%; 
+            background: var(--tab-bg); 
+            height: 6px; 
+            border-radius: 3px; 
+            outline: none; 
+            padding: 0; 
+            border: none; 
+        }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--tab-active-color); cursor: pointer; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
         #cropModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 999; display: flex; flex-direction: column; }
@@ -197,7 +209,18 @@
             <textarea id="customReasonsConfig" rows="3"></textarea>
         </div>
 
-        <button class="btn btn-primary" onclick="saveConfig()">儲存並返回</button>
+        <div class="form-group" style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+            <label style="color: var(--error-color);">進階操作</label>
+            <button class="btn" style="background-color: #ef4444; color: white;" onclick="resetTemplate()">⚠️ 重設 Google Sheet 表格範本</button>
+            <div style="font-size: 0.8rem; color: var(--label-color); margin-top: 8px; line-height: 1.4;">
+                點擊後將重新繪製 Template 分頁為 V4.00 版。<br>
+                (注意：已存在的月份工作表不會被影響)
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveConfig()">儲存並返回</button>
+        </div>
     </div>
 </div>
 
@@ -232,7 +255,6 @@
         const savedName = localStorage.getItem('user_name') || '';
         const savedReasons = localStorage.getItem('custom_reasons') || "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
         
-        // 載入主題設定
         const savedTheme = localStorage.getItem('theme') || 'light';
         setTheme(savedTheme);
 
@@ -291,7 +313,6 @@
     window.setTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-        
         document.getElementById('theme-light').classList.toggle('active', theme === 'light');
         document.getElementById('theme-dark').classList.toggle('active', theme === 'dark');
     };
@@ -305,6 +326,39 @@
         renderReasonOptions(els.customReasonsConfig.value);
         showMsg('設定已儲存', 'success', 'config');
         setTimeout(hideConfig, 600);
+    };
+
+    // 重設範本的 JS 函式
+    window.resetTemplate = () => {
+        const confirmMsg = "確定要重設範本嗎？\n\n注意：這只會更新 'Template' 分頁。\n已存在的月份表格 (如 2026-02) 不會改變。\n若要套用新格式到本月，請先到 Google Sheet 手動刪除或修改該月工作表。";
+        
+        if(!confirm(confirmMsg)) return;
+
+        const url = localStorage.getItem('gas_url');
+        if(!url) return showMsg('請先設定 API 網址', 'error', 'config');
+
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "正在重設範本...";
+
+        const formData = new FormData();
+        formData.append('action', 'reset_template');
+
+        fetch(url, { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(d => {
+                if(d.result === 'success') {
+                    alert('✅ 範本已成功重設！\n\n下次建立新月份時將套用新格式。\n(舊的月份需要手動刪除工作表才會生效)');
+                } else {
+                    alert('❌ 重設失敗: ' + (d.error || '未知錯誤'));
+                }
+            })
+            .catch(e => alert('❌ 連線失敗，請檢查網路或 API 網址'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            });
     };
 
     window.handleSubmit = (e) => {
@@ -321,13 +375,10 @@
         formData.append('date', document.getElementById('date').value);
         formData.append('name', userName);
         
-        // --- 核心修改：判斷模式決定是否傳送 StartTime ---
         const isRegular = document.getElementById('mode-regular').classList.contains('active');
         if (!isRegular) {
-            // 非常規模式 (特定加班/特殊時段)：傳送介面上的開始時間
             formData.append('startTime', document.getElementById('startTime').value);
         } else {
-            // 常規模式：起始不用 (傳送空字串，確保後端欄位對齊但無內容)
             formData.append('startTime', '');
         }
 
