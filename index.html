@@ -1,448 +1,648 @@
-<!-- //0202  -->
-<!-- 在「系統設定」頁面增加「⚠️ 重設 Google Sheet 表格範本」按鈕與防呆警語。 -->
+<!-- 無盡火域：神魄登記 -->
+<!-- 2026.02.05 優化原有佈局另新增P佈局 -->
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="zh-TW" data-theme="poryphone">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>加班記錄器</title>
+    <title>無盡火域：神魄登記</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
     <style>
+        /* =========================================
+           核心主題變數 (Game UI Theme)
+           ========================================= */
         :root {
             --base-font-size: 16px;
-            --bg-color: #f8fafc;
-            --container-bg: #ffffff;
-            --text-color: #1e293b;
+            --transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            --pory-cyan: #2bc0d1;
+            --pory-dark: #1a6b7d;
+            --pory-accent: #57d5e5;
+            --warning-red: #ef4444;
+            --grid-gap: 10px; 
+            --container-padding: 10px; 
+        }
+
+        /* 確保全域字體受變數控制 */
+        html {
+            font-size: var(--base-font-size);
+        }
+
+        [data-theme="poryphone"] {
+            --bg-gradient: linear-gradient(180deg, #57d5e5 0%, #1a8a99 100%);
+            --header-text: #ffffff;
+            --text-color: #ffffff;
+            --label-color: #b2f0f7;
+            --input-bg: rgba(255, 255, 255, 0.95);
+            --input-text: #1a6b7d;
+            --btn-primary: linear-gradient(135deg, #4edeea, #26a9b8);
+            --clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+            --overlay-bg: rgba(26, 138, 153, 0.95);
+            --toast-bg: #ffffff;
+            --toast-text: #1a6b7d;
+            --active-dot-bg: #ffffff;
+            --active-dot-text: #1a6b7d;
+            --glow-color: rgba(255, 255, 255, 0.8); /* [更新] 加強飽和度與亮度 */
+            --active-border: 2px solid #ffffff;
+        }
+
+        [data-theme="light"] {
+            --bg-gradient: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            --header-text: #334155;
+            --text-color: #334155;
             --label-color: #64748b;
-            --border-color: #e2e8f0;
             --input-bg: #ffffff;
-            --shadow-color: rgba(0, 0, 0, 0.05);
-            --accent-shadow: rgba(79, 70, 229, 0.15);
-            --tab-bg: #f1f5f9;
-            --tab-active-bg: #ffffff;
-            --tab-active-color: #4f46e5;
-            --primary-btn-bg: linear-gradient(135deg, #4f46e5, #4338ca);
-            --secondary-btn-bg: #94a3b8;
-            --ocr-btn-bg: #7c3aed;
-            --success-color: #10b981;
-            --error-color: #ef4444;
-            --border-radius: 12px;
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --input-text: #334155;
+            --btn-primary: linear-gradient(135deg, #64748b, #334155);
+            --clip-path: none;
+            --overlay-bg: rgba(248, 250, 252, 0.98);
+            --toast-bg: #ffffff;
+            --toast-text: #334155;
+            --active-dot-bg: #334155;
+            --active-dot-text: #ffffff;
+            --glow-color: rgba(79, 70, 229, 0.6); /* [更新] 改用具有對比感的靛紫色 */
+            --active-border: 2px solid #4f46e5; /* [新增] 明顯的深色邊框 */
         }
 
         [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --container-bg: #1e293b;
-            --text-color: #f8fafc;
+            --bg-gradient: linear-gradient(180deg, #111827 0%, #030712 100%);
+            --header-text: #ffffff;
+            --text-color: #ffffff;
             --label-color: #94a3b8;
-            --border-color: #334155;
-            --input-bg: #0f172a;
-            --shadow-color: rgba(0, 0, 0, 0.3);
-            --tab-bg: #0f172a;
-            --tab-active-bg: #1e293b;
-            --tab-active-color: #818cf8;
+            --input-bg: #1f2937;
+            --input-text: #ffffff;
+            --btn-primary: linear-gradient(135deg, #374151, #111827);
+            --clip-path: none;
+            --overlay-bg: rgba(17, 24, 39, 0.98);
+            --toast-bg: #1f2937;
+            --toast-text: #ffffff;
+            --active-dot-bg: #ffffff;
+            --active-dot-text: #111827;
+            --glow-color: #ffffff;
+            --active-border: 2px solid #ffffff;
         }
 
-        * { box-sizing: border-box; }
-        html { font-size: var(--base-font-size); }
+        /* =========================================
+           背景與 CRT 效果
+           ========================================= */
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color); color: var(--text-color);
-            margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center;
-            padding: 15px; transition: background-color 0.3s;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-color);
+            margin: 0; min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; 
+            padding: 20px; overflow-x: hidden;
         }
 
-        .container {
-            background-color: var(--container-bg);
-            width: 100%; max-width: 420px; padding: 28px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 20px 25px -5px var(--shadow-color);
-            position: relative; max-height: 95vh; overflow-y: auto;
+        body::before {
+            content: "";
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0px, rgba(0, 0, 0, 0.05) 1px, transparent 1px, transparent 2px);
+            pointer-events: none; z-index: 100;
         }
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        h2 { margin: 0; font-size: 1.4rem; font-weight: 700; color: var(--tab-active-color); }
-
-        .view { animation: fadeIn 0.3s ease-out; }
-        .hidden { display: none !important; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+        .main-container {
+            width: 100%; max-width: 420px;
+            display: flex; flex-direction: column; 
+            gap: var(--grid-gap); z-index: 10;
         }
 
-        .mode-tabs { display: flex; background-color: var(--tab-bg); padding: 4px; border-radius: 10px; margin-bottom: 20px; }
-        .mode-tab {
-            flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 8px;
-            font-size: 0.85rem; font-weight: 600; color: var(--label-color); transition: var(--transition);
+        header {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0; margin-bottom: 5px;
         }
-        .mode-tab.active { background-color: var(--tab-active-bg); color: var(--tab-active-color); box-shadow: 0 2px 4px var(--shadow-color); }
 
-        .form-group { margin-bottom: 18px; }
-        label { display: block; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; color: var(--label-color); text-transform: uppercase; }
-        input, select, textarea {
-            width: 100%; padding: 12px; border: 1.5px solid var(--border-color);
-            border-radius: 8px; background-color: var(--input-bg); color: var(--text-color);
-            font-size: 1rem; transition: var(--transition);
+        .brand-title {
+            font-size: 1.6rem; font-weight: 900; color: var(--header-text);
+            text-transform: uppercase; font-style: italic; letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--tab-active-color); box-shadow: 0 0 0 3px var(--accent-shadow); }
 
-        .btn {
-            width: 100%; padding: 14px; border: none; border-radius: 8px;
-            font-size: 1rem; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition);
+        /* =========================================
+           右上角主題切換鈕
+           ========================================= */
+        .skin-group { display: flex; gap: 8px; }
+        .skin-dot {
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--header-text);
+            cursor: pointer; transition: var(--transition); opacity: 0.5;
+            display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 900;
+            background: transparent; color: var(--header-text);
         }
-        .btn-primary { background: var(--primary-btn-bg); color: white; }
-        .btn-secondary { background-color: var(--secondary-btn-bg); color: white; width: auto; padding: 8px 14px; font-size: 0.75rem; }
-        .btn-ocr { background-color: var(--ocr-btn-bg); color: white; margin-top: 8px; font-size: 0.9rem; padding: 10px; }
+        .skin-dot.active { 
+            opacity: 1; 
+            transform: scale(1.15); 
+            background: var(--active-dot-bg); 
+            color: var(--active-dot-text); 
+            box-shadow: 0 0 12px var(--glow-color);
+            border-color: var(--active-dot-bg);
+        }
 
-        .bottom-controls { display: flex; justify-content: center; gap: 8px; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-color); }
-        .msg { padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; display: none; text-align: center; font-weight: 600; }
-        .msg.success { background-color: rgba(16, 185, 129, 0.1); color: var(--success-color); border: 1px solid var(--success-color); }
-        .msg.error { background-color: rgba(239, 68, 68, 0.1); color: var(--error-color); border: 1px solid var(--error-color); }
+        /* =========================================
+           全系統齊平標籤 (無橫線)
+           ========================================= */
+        .section-tag {
+            font-size: 0.75rem; font-weight: 900; color: var(--label-color);
+            text-transform: uppercase; margin-bottom: 5px;
+            display: flex; align-items: center; 
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
+            width: 100%;
+            transition: var(--transition);
+        }
 
-        /* Font Slider Styling */
-        .slider-group { margin-bottom: 20px; padding: 0 5px; }
-        .slider-header { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; color: var(--label-color); margin-bottom: 6px; }
-        
-        /* [修正] 增加 appearance: none 以解決 VS Code 相容性警告 */
-        input[type="range"] { 
-            -webkit-appearance: none; 
-            appearance: none; /* 標準語法 */
-            width: 100%; 
-            background: var(--tab-bg); 
-            height: 6px; 
-            border-radius: 3px; 
-            outline: none; 
+        .section-tag::after {
+            content: none !important;
+            display: none !important;
+        }
+
+        .floating-panel {
+            background-color: transparent;
+            border: none;
             padding: 0; 
-            border: none; 
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: var(--grid-gap);
+            transition: var(--transition);
+            width: 100%;
+            box-sizing: border-box;
         }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--tab-active-color); cursor: pointer; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
-        #cropModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 999; display: flex; flex-direction: column; }
-        .crop-footer { padding: 15px; background: var(--container-bg); display: flex; gap: 10px; }
+        .dimmed {
+            opacity: 0.3 !important;
+            filter: grayscale(0.5);
+        }
+
+        .grid-row-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: var(--grid-gap); 
+            width: 100%;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #startPanel { align-items: flex-start; }
+        #endPanel { align-items: flex-end; }
+        #endPanel .section-tag { justify-content: flex-end; }
+
+        /* =========================================
+           輸入元件樣式
+           ========================================= */
+        .input-group { display: flex; flex-direction: column; gap: 5px; width: 100%; transition: var(--transition); }
+        
+        input, select, textarea {
+            width: 100%; padding: 16px 15px; border: 2px solid transparent; border-radius: 12px;
+            background-color: var(--input-bg); color: var(--input-text); font-size: 1.05rem;
+            font-weight: 600; transition: var(--transition); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-sizing: border-box; 
+        }
+        input:focus, textarea:focus { border-color: var(--pory-cyan); background: #fff; outline: none; }
+
+        .select-wrapper { position: relative; width: 100%; transition: var(--transition); }
+        [data-theme="poryphone"] .select-wrapper::after {
+            content: "▼"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            color: white; font-size: 0.7rem; pointer-events: none; background: var(--pory-cyan);
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; clip-path: polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .mode-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: var(--grid-gap); 
+            width: 100%;
+        }
+
+        /* [更新] 下班項目按鈕：強化發光厚度與邊框感 */
+        .mode-btn {
+            padding: 18px 5px; text-align: center; border-radius: 12px; cursor: pointer;
+            font-size: 0.85rem; font-weight: 900; background: rgba(0,0,0,0.1);
+            color: var(--text-color); border: 2px solid transparent; 
+            transition: all 0.4s ease; 
+        }
+        
+        .mode-btn.active {
+            background: var(--btn-primary); 
+            color: white; 
+            clip-path: none; 
+            border-radius: 12px;
+            border: var(--active-border); /* 主題專屬對比邊框 */
+            /* 雙層投影：大範圍柔和擴散 + 近距離核心發光 */
+            box-shadow: 0 0 25px var(--glow-color), 0 0 10px var(--glow-color); 
+            transform: scale(1.02); 
+        }
+
+        .btn-action {
+            width: 100%; padding: 20px; border: none; cursor: pointer; font-size: 1.2rem;
+            font-weight: 900; color: white; background: var(--btn-primary); border-radius: 15px;
+            clip-path: var(--clip-path); transition: var(--transition); box-shadow: 0 6px 0px rgba(0,0,0,0.1);
+        }
+        .btn-action:active { transform: translateY(3px); box-shadow: none; }
+
+        .btn-ocr {
+            background: var(--pory-dark); color: white; padding: 14px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.3); width: 100%; margin-top: 5px; font-weight: 800; cursor: pointer;
+        }
+
+        /* =========================================
+           設定面板同步
+           ========================================= */
+        .config-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay-bg); backdrop-filter: blur(25px);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            padding: 20px; overflow-y: auto; transition: var(--transition);
+        }
+        .config-panel {
+            width: 100%; max-width: 440px; background: transparent; display: flex;
+            flex-direction: column; gap: 20px; position: relative;
+            padding: 20px 0; max-height: 95vh;
+        }
+        .config-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0; }
+        
+        .config-panel h2 {
+            margin: 0; font-style: italic; text-transform: uppercase;
+            display: inline-block; font-size: 2rem; font-weight: 900; letter-spacing: 2px;
+            color: var(--header-text);
+        }
+
+        .close-x {
+            width: 55px; height: 55px; background: #ef4444; color: white; border-radius: 50%;
+            border: 4px solid #fff; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: var(--transition);
+        }
+        .close-x:hover { transform: rotate(20deg) scale(1.15); }
+
+        /* =========================================
+           系統提示彈窗
+           ========================================= */
+        #overlay-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(15px);
+            z-index: 4999; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        #overlay-bg.show { opacity: 1; pointer-events: auto; }
+
+        .status-toast {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            background: var(--toast-bg); 
+            color: var(--toast-text); 
+            padding: 40px; border-radius: 32px; 
+            font-weight: 900; z-index: 5000; opacity: 0; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.4); border: 6px solid var(--pory-cyan);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center;
+            width: 90%; max-width: 400px;
+        }
+        .status-toast.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .status-toast.warning { border-color: var(--warning-red); }
+
+        input[type="range"] { 
+            -webkit-appearance: none; background: rgba(0,0,0,0.1); height: 12px; border-radius: 6px; 
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 26px; height: 26px; background: #fff; border-radius: 50%;
+            cursor: pointer; border: 3px solid var(--pory-cyan); box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="mainView" class="view">
-        <header>
-            <h2>加班記錄器</h2>
-            <div class="mode-tabs" style="margin: 0; padding: 3px; min-width: 130px; margin-bottom: 0;">
-                <div class="mode-tab active" id="theme-light" onclick="setTheme('light')">☀️ 亮色</div>
-                <div class="mode-tab" id="theme-dark" onclick="setTheme('dark')">🌙 深色</div>
-            </div>
-        </header>
+<div id="overlay-bg"></div>
+<div id="statusToast" class="status-toast"></div>
 
-        <div class="slider-group">
-            <div class="slider-header"><span>介面字體大小</span><span id="fontSizeVal">16px</span></div>
-            <input type="range" id="fontSizeSlider" min="12" max="24" value="16" oninput="updateFontSize(this.value)">
+<div class="main-container">
+    <header>
+        <div class="brand-title">無盡火域：神魄登記</div>
+        <div class="skin-group">
+            <div class="skin-dot" id="s-poryphone" onclick="setTheme('poryphone')">P</div>
+            <div class="skin-dot" id="s-light" onclick="setTheme('light')">L</div>
+            <div class="skin-dot" id="s-dark" onclick="setTheme('dark')">D</div>
         </div>
+    </header>
 
-        <div id="msg" class="msg"></div>
+    <!-- 介面縮放比例 -->
+    <div class="floating-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; position:relative;">
+            <div class="section-tag">介面縮放比例</div>
+            <b id="fsVal" style="font-size: 1rem; color: var(--pory-cyan); position:absolute; right:10px; top:-2px;">16px</b>
+        </div>
+        <input type="range" id="fsSlider" min="14" max="22" value="16" style="width: 100%;" oninput="updateFontSize(this.value)">
+    </div>
 
-        <form id="otForm" onsubmit="handleSubmit(event)">
-            <div class="form-group">
-                <label for="date">日期</label>
-                <input type="date" id="date" required>
-            </div>
-
-            <div id="subModeSection">
-                <div id="subModeTabs" class="mode-tabs">
-                    <div class="mode-tab active" id="mode-regular" onclick="setMode('regular')">常規下班</div>
-                    <div class="mode-tab" id="mode-overtime" onclick="setMode('overtime')">特定加班</div>
-                    <div class="mode-tab" id="mode-special" onclick="setMode('special')">特殊時段</div>
-                </div>
-            </div>
-
-            <div id="timeFields">
-                <div style="display: flex; gap: 10px;">
-                    <div class="form-group" id="startGroup" style="flex: 1;">
-                        <label for="startTime">開始時間</label>
-                        <input type="time" id="startTime">
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label for="endTime">結束時間</label>
-                        <input type="time" id="endTime" required>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>加班事由</label>
-                <select id="reasonSelect" onchange="if(this.value) document.getElementById('reason').value=this.value" style="margin-bottom: 8px;">
-                </select>
-                <textarea id="reason" rows="3" placeholder="請手動輸入或從上方快速選擇..." required></textarea>
-                
-                <button type="button" class="btn btn-ocr" onclick="document.getElementById('ocrInput').click()">📷 OCR 智慧辨識</button>
-            </div>
-
-            <button type="submit" id="submitBtn" class="btn btn-primary">送出登記</button>
-            <input type="file" id="ocrInput" accept="image/*" class="hidden" onchange="openCrop(this)">
-        </form>
-
-        <div class="bottom-controls">
-            <button class="btn btn-secondary" style="width: 100%;" onclick="showConfig()">⚙️ 系統設定</button>
+    <!-- 日期選擇 -->
+    <div class="floating-panel">
+        <div class="section-tag">日期選擇</div>
+        <div class="input-group">
+            <input type="date" id="dateIn" required>
         </div>
     </div>
 
-    <div id="configView" class="view hidden">
-        <header>
-            <h2>系統設定</h2>
-            <button class="btn btn-secondary" onclick="hideConfig()">返回</button>
-        </header>
-        <div id="configMsg" class="msg"></div>
+    <!-- 下班項目設定 -->
+    <div class="floating-panel">
+        <div class="section-tag">下班項目設定</div>
+        <div class="mode-grid">
+            <div class="mode-btn active" id="m-regular" onclick="setMode('regular')">常規下班</div>
+            <div class="mode-btn" id="m-overtime" onclick="setMode('overtime')">特定加班</div>
+            <div class="mode-btn" id="m-special" onclick="setMode('special')">特殊時段</div>
+        </div>
+    </div>
 
-        <div class="form-group">
-            <label>您的姓名 (用於自動填寫)</label>
-            <input type="text" id="userNameSetting" placeholder="例如：金城武">
-        </div>
-        <div class="form-group">
-            <label>GAS 網址 (您的 API)</label>
-            <input type="text" id="gasUrlInput" placeholder="請貼上 .exec 網址">
-        </div>
-        <div class="form-group">
-            <label>常用事由 (請用逗號 [,] 分隔)</label>
-            <textarea id="customReasonsConfig" rows="3"></textarea>
-        </div>
-
-        <div class="form-group" style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
-            <label style="color: var(--error-color);">進階操作</label>
-            <button class="btn" style="background-color: #ef4444; color: white;" onclick="resetTemplate()">⚠️ 重設 Google Sheet 表格範本</button>
-            <div style="font-size: 0.8rem; color: var(--label-color); margin-top: 8px; line-height: 1.4;">
-                點擊後將重新繪製 Template 分頁為 V4.00 版。<br>
-                (注意：已存在的月份工作表不會被影響)
+    <!-- 開始與結束 -->
+    <div class="grid-row-container">
+        <div class="floating-panel" id="startPanel">
+            <div class="section-tag">開始時間</div>
+            <div class="input-group" id="startInputGroup">
+                <input type="time" id="startTime" oninput="wakeUp('startInputGroup')">
             </div>
         </div>
 
-        <div style="margin-top: 20px;">
-            <button class="btn btn-primary" onclick="saveConfig()">儲存並返回</button>
+        <div class="floating-panel" id="endPanel">
+            <div class="section-tag">結束時間</div>
+            <div class="input-group" id="endInputGroup">
+                <input type="time" id="endTime" required oninput="wakeUp('endInputGroup')">
+            </div>
+        </div>
+    </div>
+
+    <!-- 事由與提交 -->
+    <div class="floating-panel">
+        <div class="section-tag">加班事由 / 活動內容</div>
+        <div class="input-group">
+            <div class="select-wrapper dimmed" id="reasonQuickWrapper">
+                <select id="reasonQuick" onchange="handleQuickReasonChange()">
+                </select>
+            </div>
+            <textarea id="reasonMain" rows="3" placeholder="請在此輸入加班細節內容..."></textarea>
+            
+            <button class="btn-ocr" onclick="document.getElementById('ocrInput').click()">
+                📷 啟動智慧文字辨識 (OCR)
+            </button>
+            <input type="file" id="ocrInput" accept="image/*" class="hidden" onchange="openCrop(this)">
+        </div>
+
+        <button class="btn-action" onclick="handleSubmit()">上傳系統資料紀錄</button>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 15px; align-items: center;">
+            <span style="font-size: 0.75rem; color: var(--header-text); opacity: 0.6; font-weight: 900; letter-spacing: 1px;">系統 V1.01 [炎帝武祖 · 牧主齊聚]</span>
+            <button onclick="showConfig()" style="background: rgba(0,0,0,0.1); border: 2px solid var(--header-text); color: var(--header-text); padding: 10px 24px; border-radius: 50px; cursor: pointer; font-weight: 900; font-size: 0.8rem;">⚙️ 系統設定</button>
         </div>
     </div>
 </div>
 
-<div id="cropModal" class="hidden">
-    <div style="flex:1; background:#000; display: flex; align-items: center; justify-content: center; overflow:hidden;">
-        <img id="imageToCrop" style="max-width:100%; max-height:100%;">
+<!-- 設定頁面 -->
+<div id="configOverlay" class="config-overlay hidden">
+    <div class="config-panel">
+        <div class="config-header">
+            <h2>系統設定</h2>
+            <div class="close-x" onclick="hideConfig()">✕</div>
+        </div>
+        
+        <div class="floating-panel">
+            <div class="section-tag">一般參數設定</div>
+            <div class="input-group">
+                <label style="font-size:0.75rem; font-weight:900; color:var(--label-color); margin-bottom: 2px;">使用者姓名</label>
+                <input type="text" id="cfgName" placeholder="例如：牧塵、洛璃">
+            </div>
+            <div class="input-group" style="margin-top: 5px;">
+                <label style="font-size:0.75rem; font-weight:900; color:var(--label-color); margin-bottom: 2px;">GAS API 伺服器網址</label>
+                <input type="text" id="cfgUrl" placeholder="https://script.google.com/...">
+            </div>
+            <div class="input-group" style="margin-top: 5px;">
+                <label style="font-size:0.75rem; font-weight:900; color:var(--label-color); margin-bottom: 2px;">常用加班事由 (以逗號分隔)</label>
+                <textarea id="cfgReasons" rows="8" placeholder="輸入事由，每個以逗號分隔..."></textarea>
+            </div>
+            <button class="btn-action" style="margin-top: 10px;" onclick="saveConfig()">儲存所有設定</button>
+        </div>
+
+        <div class="floating-panel" style="margin-top: 5px;">
+            <div class="section-tag" style="color: var(--warning-red);">管理員進階工具</div>
+            <button class="btn-action" style="background: #ef4444; font-size: 1rem; padding: 15px; clip-path: none;" onclick="confirmReset()">
+                ⚠️ 重設 Google 試算表範本
+            </button>
+        </div>
     </div>
-    <div class="crop-footer">
-        <button class="btn btn-secondary" onclick="closeCrop()">取消</button>
-        <button class="btn btn-primary" onclick="doOCR()"><span id="ocrStatus">確認並辨識</span></button>
+</div>
+
+<!-- OCR 圖片裁切彈窗 -->
+<div id="cropModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:3000; display:flex; flex-direction:column;">
+    <div style="flex:1; position:relative; overflow:hidden;">
+        <img id="cropImg" style="max-width:100%;">
+    </div>
+    <div style="padding: 20px; background:#fff; display:flex; gap:10px;">
+        <button class="btn-action" style="background:#666; clip-path:none;" onclick="closeCrop()">取消</button>
+        <button class="btn-action" id="ocrGo" style="clip-path:none;" onclick="doOCR()">確定辨識</button>
     </div>
 </div>
 
 <script>
-    const els = {
-        main: document.getElementById('mainView'), config: document.getElementById('configView'),
-        form: document.getElementById('otForm'), msg: document.getElementById('msg'),
-        configMsg: document.getElementById('configMsg'),
-        submitBtn: document.getElementById('submitBtn'),
-        startGroup: document.getElementById('startGroup'), cropModal: document.getElementById('cropModal'),
-        imageToCrop: document.getElementById('imageToCrop'), ocrStatus: document.getElementById('ocrStatus'),
-        gasInput: document.getElementById('gasUrlInput'), userNameSetting: document.getElementById('userNameSetting'),
-        customReasonsConfig: document.getElementById('customReasonsConfig'), reasonSelect: document.getElementById('reasonSelect'),
-        reasonText: document.getElementById('reason'), fsSlider: document.getElementById('fontSizeSlider'), fsVal: document.getElementById('fontSizeVal')
+    const state = { cropper: null, mode: 'regular' };
+    const el = {
+        toast: document.getElementById('statusToast'),
+        overlayBg: document.getElementById('overlay-bg'),
+        fsSlider: document.getElementById('fsSlider'),
+        fsVal: document.getElementById('fsVal'),
+        date: document.getElementById('dateIn'),
+        start: document.getElementById('startTime'),
+        end: document.getElementById('endTime'),
+        startInputGroup: document.getElementById('startInputGroup'),
+        endInputGroup: document.getElementById('endInputGroup'),
+        reason: document.getElementById('reasonMain'),
+        reasonQuick: document.getElementById('reasonQuick'),
+        reasonQuickWrapper: document.getElementById('reasonQuickWrapper'),
+        cfgOverlay: document.getElementById('configOverlay'),
+        cfgName: document.getElementById('cfgName'),
+        cfgUrl: document.getElementById('cfgUrl'),
+        cfgReasons: document.getElementById('cfgReasons'),
+        cropModal: document.getElementById('cropModal'),
+        cropImg: document.getElementById('cropImg'),
+        ocrGo: document.getElementById('ocrGo')
     };
-
-    let cropper = null;
 
     window.onload = () => {
         const url = localStorage.getItem('gas_url');
+        const theme = localStorage.getItem('theme') || 'poryphone';
         const fontSize = localStorage.getItem('base_font_size') || '16';
-        const savedName = localStorage.getItem('user_name') || '';
-        const savedReasons = localStorage.getItem('custom_reasons') || "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
-        
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme);
-
+        const reasons = localStorage.getItem('custom_reasons') || "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
+        setTheme(theme);
         updateFontSize(fontSize);
-        els.fsSlider.value = fontSize;
-        els.gasInput.value = url || '';
-        els.userNameSetting.value = savedName;
-        els.customReasonsConfig.value = savedReasons;
-
-        renderReasonOptions(savedReasons);
-
+        el.fsSlider.value = fontSize;
+        el.cfgName.value = localStorage.getItem('user_name') || '';
+        el.cfgUrl.value = url || '';
+        el.cfgReasons.value = reasons;
+        renderReasons(reasons);
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        document.getElementById('date').value = `${year}-${month}-${day}`;
-        document.getElementById('endTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        
+        el.date.valueAsDate = now;
+        el.end.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        el.endInputGroup.classList.add('dimmed');
         if (!url) showConfig();
         setMode('regular');
     };
 
-    window.updateFontSize = (val) => {
-        document.documentElement.style.setProperty('--base-font-size', val + 'px');
-        els.fsVal.textContent = val + 'px';
-        localStorage.setItem('base_font_size', val);
+    window.setTheme = (t) => {
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('theme', t);
+        document.querySelectorAll('.skin-dot').forEach(d => d.classList.toggle('active', d.id === 's-' + t));
     };
 
-    window.renderReasonOptions = (reasonsStr) => {
-        els.reasonSelect.innerHTML = '<option value="" selected disabled>-- 快速選擇 --</option>';
-        reasonsStr.split(/[,，\n]+/).map(s => s.trim()).filter(s => s).forEach(item => {
-            const opt = document.createElement('option'); opt.value = opt.textContent = item;
-            els.reasonSelect.appendChild(opt);
+    window.updateFontSize = (v) => {
+        document.documentElement.style.setProperty('--base-font-size', v + 'px');
+        el.fsVal.textContent = v + 'px';
+        localStorage.setItem('base_font_size', v);
+    };
+
+    window.setMode = (m) => {
+        state.mode = m;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.id === 'm-' + m));
+        const stdOff = localStorage.getItem('std_off') || '17:30';
+        const stdStart = localStorage.getItem('std_start') || '08:30';
+        if (m === 'regular') {
+            el.startInputGroup.classList.add('dimmed');
+            el.start.value = stdOff;
+        } else {
+            el.startInputGroup.classList.remove('dimmed');
+            el.start.value = (m === 'overtime') ? stdOff : stdStart;
+        }
+    };
+
+    window.wakeUp = (id) => {
+        document.getElementById(id).classList.remove('dimmed');
+    };
+
+    window.handleQuickReasonChange = () => {
+        if(el.reasonQuick.value) {
+            el.reason.value = el.reasonQuick.value;
+            el.reasonQuickWrapper.classList.remove('dimmed');
+        }
+    };
+
+    window.renderReasons = (str) => {
+        el.reasonQuick.innerHTML = '<option value="" disabled selected>-- 快速選擇事由 --</option>';
+        str.split(/[,，\n]+/).map(s => s.trim()).filter(s => s).forEach(r => {
+            const o = document.createElement('option'); o.value = o.textContent = r;
+            el.reasonQuick.appendChild(o);
         });
     };
 
-    window.setMode = (mode) => {
-        document.querySelectorAll('#subModeTabs .mode-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(`mode-${mode}`).classList.add('active');
-        
-        const offTime = localStorage.getItem('std_off') || '17:30';
-        const startTime = localStorage.getItem('std_start') || '08:30';
-        
-        if (mode === 'regular') {
-            els.startGroup.classList.add('hidden');
-            document.getElementById('startTime').value = offTime;
-        } else {
-            els.startGroup.classList.remove('hidden');
-            document.getElementById('startTime').value = (mode === 'overtime') ? offTime : startTime;
-        }
-    };
-
-    window.showConfig = () => { els.main.classList.add('hidden'); els.config.classList.remove('hidden'); };
-    window.hideConfig = () => { els.config.classList.add('hidden'); els.main.classList.remove('hidden'); };
-
-    window.setTheme = (theme) => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        document.getElementById('theme-light').classList.toggle('active', theme === 'light');
-        document.getElementById('theme-dark').classList.toggle('active', theme === 'dark');
-    };
+    window.showConfig = () => el.cfgOverlay.classList.remove('hidden');
+    window.hideConfig = () => el.cfgOverlay.classList.add('hidden');
 
     window.saveConfig = () => {
-        const url = els.gasInput.value.trim();
-        if(!url) return showMsg('網址不可為空', 'error', 'config');
-        localStorage.setItem('gas_url', url);
-        localStorage.setItem('user_name', els.userNameSetting.value.trim());
-        localStorage.setItem('custom_reasons', els.customReasonsConfig.value);
-        renderReasonOptions(els.customReasonsConfig.value);
-        showMsg('設定已儲存', 'success', 'config');
-        setTimeout(hideConfig, 600);
+        localStorage.setItem('gas_url', el.cfgUrl.value.trim());
+        localStorage.setItem('user_name', el.cfgName.value.trim());
+        localStorage.setItem('custom_reasons', el.cfgReasons.value);
+        renderReasons(el.cfgReasons.value);
+        toast('✅ 設定已成功儲存');
+        setTimeout(hideConfig, 800);
     };
 
-    // 重設範本的 JS 函式
-    window.resetTemplate = () => {
-        const confirmMsg = "確定要重設範本嗎？\n\n注意：這只會更新 'Template' 分頁。\n已存在的月份表格 (如 2026-02) 不會改變。\n若要套用新格式到本月，請先到 Google Sheet 手動刪除或修改該月工作表。";
-        
-        if(!confirm(confirmMsg)) return;
-
+    window.confirmReset = () => {
         const url = localStorage.getItem('gas_url');
-        if(!url) return showMsg('請先設定 API 網址', 'error', 'config');
+        if(!url) return alert('請先設定 API 網址');
+        const content = `
+            <div style="font-size: 4rem; color: #ef4444; margin-bottom: 10px;">⚠️</div>
+            <div style="font-size: 1.5rem; color: #ef4444; margin-bottom: 5px;">嚴重警告</div>
+            <div style="font-size: 1rem; color: #666; line-height: 1.6;">確定要重設範本嗎？<br>此動作將會覆蓋雲端定義且無法撤銷！</div>
+            <div style="display: flex; gap: 15px; width: 100%; margin-top: 20px;">
+                <button style="flex:1; padding:15px; border-radius:12px; border:none; background:#eee; font-weight:900; cursor:pointer;" onclick="closeToast()">取消返回</button>
+                <button style="flex:1; padding:15px; border-radius:12px; border:none; background:#ef4444; color:white; font-weight:900; cursor:pointer;" onclick="executeReset()">確認重設</button>
+            </div>`;
+        showSpecialModal(content, true);
+    };
 
-        const btn = event.target;
-        const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = "正在重設範本...";
-
-        const formData = new FormData();
-        formData.append('action', 'reset_template');
-
-        fetch(url, { method: 'POST', body: formData })
-            .then(r => r.json())
-            .then(d => {
-                if(d.result === 'success') {
-                    alert('✅ 範本已成功重設！\n\n下次建立新月份時將套用新格式。\n(舊的月份需要手動刪除工作表才會生效)');
+    window.executeReset = () => {
+        const url = localStorage.getItem('gas_url');
+        closeToast();
+        toast('⏳ 重設請求傳送中...');
+        const fd = new FormData(); fd.append('action', 'reset_template');
+        fetch(url, { method: 'POST', body: fd })
+            .then(r => r.json()).then(d => {
+                if(d.result === 'success' || d.status === 'success') {
+                    toast('✅ 範本重設成功');
+                    setTimeout(() => {
+                        alert('✅ 範本已成功重設！\n\n下次建立新月份時將套用新格式。\n(舊的月份需要手動刪除工作表才會生效)');
+                    }, 800);
                 } else {
                     alert('❌ 重設失敗: ' + (d.error || '未知錯誤'));
                 }
-            })
-            .catch(e => alert('❌ 連線失敗，請檢查網路或 API 網址'))
-            .finally(() => {
-                btn.disabled = false;
-                btn.textContent = originalText;
-            });
+            }).catch(() => alert('❌ 連線異常'));
     };
 
-    window.handleSubmit = (e) => {
-        e.preventDefault();
+    window.handleSubmit = () => {
         const url = localStorage.getItem('gas_url');
-        const userName = localStorage.getItem('user_name') || 'User';
-        if(!url) return alert('請先設定 API 網址');
-
-        els.submitBtn.disabled = true; els.submitBtn.textContent = '傳送中...';
-        showMsg('傳送中...', '');
-        
-        const formData = new FormData();
-        formData.append('action', 'submit'); 
-        formData.append('date', document.getElementById('date').value);
-        formData.append('name', userName);
-        
-        const isRegular = document.getElementById('mode-regular').classList.contains('active');
-        if (!isRegular) {
-            formData.append('startTime', document.getElementById('startTime').value);
-        } else {
-            formData.append('startTime', '');
-        }
-
-        formData.append('endTime', document.getElementById('endTime').value);
-        formData.append('reason', els.reasonText.value);
-
-        fetch(url, { method: 'POST', body: formData })
+        if(!url) return toast('⚠️ 請先完成系統設定');
+        if(!el.reason.value) return toast('⚠️ 請填寫加班內容');
+        toast('📡 正在上傳至雲端...');
+        const fd = new FormData();
+        fd.append('action', 'submit');
+        fd.append('date', el.date.value);
+        fd.append('name', localStorage.getItem('user_name') || '未命名');
+        fd.append('startTime', state.mode === 'regular' && el.startInputGroup.classList.contains('dimmed') ? '' : el.start.value);
+        fd.append('endTime', el.end.value);
+        fd.append('reason', el.reason.value);
+        fetch(url, { method: 'POST', body: fd })
             .then(r => r.json()).then(d => {
                 if(d.result === 'success' || d.status === 'success') {
-                    showMsg('✅ 登記成功！', 'success');
-                    els.reasonText.value = ''; els.reasonSelect.value = '';
-                } else { 
-                    showMsg('❌ 錯誤: ' + (d.error || d.message), 'error'); 
-                }
-            })
-            .catch(() => showMsg('❌ 網路通訊失敗', 'error'))
-            .finally(() => { 
-                els.submitBtn.disabled = false; 
-                els.submitBtn.textContent = '送出登記'; 
-            });
+                    toast('✨ 登記成功！');
+                    el.reason.value = '';
+                    el.endInputGroup.classList.add('dimmed');
+                    el.reasonQuickWrapper.classList.add('dimmed');
+                    if(state.mode === 'regular') el.startInputGroup.classList.add('dimmed');
+                } else toast('❌ 登記失敗');
+            }).catch(() => toast('❌ 網路通訊錯誤'));
     };
 
-    function showMsg(txt, type, target = 'main') {
-        const el = target === 'config' ? els.configMsg : els.msg;
-        el.textContent = txt; el.className = 'msg ' + type; el.style.display = 'block';
-        if(type === 'success') setTimeout(() => el.style.display = 'none', 3000);
+    function toast(txt) {
+        el.toast.innerHTML = txt;
+        el.toast.className = 'status-toast show';
+        el.overlayBg.classList.add('show');
+        setTimeout(closeToast, 2200);
     }
+
+    function showSpecialModal(html, isWarning = false) {
+        el.toast.innerHTML = html;
+        el.toast.className = 'status-toast show' + (isWarning ? ' warning' : '');
+        el.overlayBg.classList.add('show');
+    }
+
+    window.closeToast = () => {
+        el.toast.classList.remove('show');
+        el.overlayBg.classList.remove('show');
+    };
 
     window.openCrop = (input) => {
         if(!input.files[0]) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            els.imageToCrop.src = e.target.result; els.cropModal.classList.remove('hidden');
-            if(cropper) cropper.destroy();
-            cropper = new Cropper(els.imageToCrop, { viewMode: 1, autoCropArea: 0.8 });
+            el.cropImg.src = e.target.result;
+            el.cropModal.classList.remove('hidden');
+            if(state.cropper) state.cropper.destroy();
+            state.cropper = new Cropper(el.cropImg, { viewMode: 1, autoCropArea: 0.8 });
         };
         reader.readAsDataURL(input.files[0]);
     };
 
-    window.closeCrop = () => { els.cropModal.classList.add('hidden'); if(cropper) cropper.destroy(); };
+    window.closeCrop = () => { el.cropModal.classList.add('hidden'); if(state.cropper) state.cropper.destroy(); };
 
     window.doOCR = () => {
-        if(!cropper) return;
         const url = localStorage.getItem('gas_url');
-        if(!url) return alert('請先設定 API 網址');
-        
-        els.ocrStatus.textContent = '辨識中...';
-        const base64 = cropper.getCroppedCanvas({maxWidth: 800}).toDataURL('image/jpeg', 0.7).split(',')[1];
-        
-        const formData = new FormData(); 
-        formData.append('action', 'ocr'); 
-        formData.append('image', base64);
-        
-        fetch(url, { method: 'POST', body: formData })
+        if(!url) return alert('請先設定 API');
+        el.ocrGo.textContent = '辨識中...';
+        const b64 = state.cropper.getCroppedCanvas({maxWidth: 800}).toDataURL('image/jpeg', 0.7).split(',')[1];
+        const fd = new FormData(); fd.append('action', 'ocr'); fd.append('image', b64);
+        fetch(url, { method: 'POST', body: fd })
             .then(r => r.json()).then(d => {
-                const resText = d.text || (d.data ? d.data.text : "");
-                if((d.result === 'success' || d.status === 'success') && resText) {
-                    els.reasonText.value = resText;
-                    showMsg('✨ 辨識完成', 'success');
-                } else { 
-                    showMsg('❌ 辨識失敗', 'error'); 
-                }
-            }).catch(() => showMsg('❌ 通訊失敗', 'error'))
-            .finally(() => { els.ocrStatus.textContent = '確認並辨識'; closeCrop(); });
+                const res = d.text || (d.data ? d.data.text : "");
+                if(res) { el.reason.value = res; toast('✨ 辨識成功'); }
+                else toast('❌ 無法辨識');
+            }).finally(() => { el.ocrGo.textContent = '確定辨識'; closeCrop(); });
     };
 </script>
 </body>
