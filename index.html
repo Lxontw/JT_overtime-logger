@@ -1,5 +1,5 @@
 <!-- 無盡火域：神魄登記 -->
-<!-- 2026.02.06 V1.07 滿版回彈終極版：徹底解決手機縮水與全局佈局鎖定 -->
+<!-- 2026.02.06 V1.08 實機滿版回魂版：徹底解決手機端時間框縮水與空白問題 -->
 <!DOCTYPE html>
 <html lang="zh-TW" data-theme="poryphone">
 <head>
@@ -98,7 +98,7 @@
             pointer-events: none; z-index: 100;
         }
 
-        /* 桌面版預設容器 */
+        /* 桌面版預設容器寬度 */
         .main-container {
             width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: var(--grid-gap); z-index: 10;
         }
@@ -157,19 +157,32 @@
         }
 
         /* =========================================
-           [修正] 手機版滿版回彈 (Width <= 420px)
+           [修正] 手機版滿版回魂 (Width <= 420px)
+           捨棄 Grid 改用 Block 並強制 100% 寬度
            ========================================= */
         @media (max-width: 420px) {
-            body { padding: 0 !important; } /* 邊界歸零 */
+            body { padding: 0 !important; }
             .main-container { 
                 width: 100% !important; 
                 max-width: none !important; 
-                padding: 15px 15px !important; /* 滿版回彈：僅保留兩側 15px */
+                padding: 15px 15px !important; 
                 box-sizing: border-box !important;
             }
-            .grid-row-container { grid-template-columns: 1fr !important; } 
-            #endPanel { align-items: flex-start !important; } 
-            #endPanel .section-tag { justify-content: flex-start !important; }
+            .grid-row-container { 
+                display: block !important; /* 手機版捨棄 Grid 改用 Block */
+            } 
+            #startPanel, #endPanel { 
+                width: 100% !important; /* 強制面板寬度 */
+                align-items: flex-start !important; /* 全部左對齊 */
+                margin-bottom: 12px;
+            }
+            #endPanel .section-tag { 
+                justify-content: flex-start !important; /* 手機標籤靠左 */
+            }
+            /* 內部輸入框組件撐滿 */
+            .input-group {
+                width: 100% !important;
+            }
         }
 
         /* =========================================
@@ -228,7 +241,7 @@
         .dimmed { opacity: 0.4 !important; filter: grayscale(0.4); }
 
         /* =========================================
-           [修復] 設定頁面面板內部 X 鈕
+           [修復] 設定頁面面板內部 X 鈕精確定位
            ========================================= */
         .config-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -238,7 +251,7 @@
         }
         .config-panel { 
             width: 100%; max-width: 440px; background: transparent; 
-            display: flex; flex-direction: column; gap: 20px; position: relative; /* 鎖定內部定位基準 */
+            display: flex; flex-direction: column; gap: 20px; position: relative; 
         }
         .config-header { 
             display: flex; justify-content: space-between; align-items: center; 
@@ -249,13 +262,13 @@
             font-weight: 900; letter-spacing: 2px; color: var(--header-text); 
         }
 
-        /* [修正] X 鈕：固定在面板頂部右上角 */
+        /* X 鈕：絕對定位精密錨定於面板右上角內部 */
         .close-x {
             width: 52px; height: 52px; background: #ef4444; color: white; border-radius: 50%;
             border: 4px solid #fff; display: flex; align-items: center; justify-content: center;
             font-size: 26px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
             transition: var(--transition); 
-            position: absolute; top: 0; right: 0; z-index: 10;
+            position: absolute; top: 0px; right: 0px; z-index: 10;
         }
 
         .status-toast {
@@ -349,7 +362,7 @@
         <button class="btn-action" onclick="handleSubmit()">上傳系統資料紀錄</button>
 
         <div style="display: flex; justify-content: space-between; margin-top: 15px; align-items: center;">
-            <span style="font-size: 0.75rem; color: var(--header-text); opacity: 0.6; font-weight: 900; letter-spacing: 1px;">系統 V1.07 [炎帝武祖 · 牧主齊聚]</span>
+            <span style="font-size: 0.75rem; color: var(--header-text); opacity: 0.6; font-weight: 900; letter-spacing: 1px;">系統 V1.08 [炎帝武祖 · 牧主齊聚]</span>
             <button onclick="showConfig()" style="background: rgba(0,0,0,0.1); border: 2px solid var(--header-text); color: var(--header-text); padding: 10px 24px; border-radius: 50px; cursor: pointer; font-weight: 900; font-size: 0.8rem;">⚙️ 系統設定</button>
         </div>
     </div>
