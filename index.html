@@ -1,5 +1,5 @@
 <!-- 無盡火域：神魄登記 -->
-<!-- 2026.02.06 V1.12 iPhone 實機絕殺版：暴力滿版鎖定與設定頁面高度/X鈕全域修正 -->
+<!-- 2026.02.06 V1.13 終極歸零版：iPhone 實機滿版回彈與全屏滾動修正 -->
 <!DOCTYPE html>
 <html lang="zh-TW" data-theme="poryphone">
 <head>
@@ -98,7 +98,7 @@
             pointer-events: none; z-index: 100;
         }
 
-        /* 桌面版預設容器寬度 (大於 600px) */
+        /* 桌面版寬度 (大於 600px) */
         .main-container {
             width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: var(--grid-gap); z-index: 10;
         }
@@ -113,13 +113,8 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* [鎖定] 橫排主題球樣式 (禁止變動) */
-        .skin-group { 
-            display: flex !important; 
-            flex-direction: row !important; 
-            gap: 8px !important; 
-            align-items: center !important; 
-        }
+        /* [鎖定] 主題球橫排 */
+        .skin-group { display: flex !important; flex-direction: row !important; gap: 8px; align-items: center; }
         .skin-dot {
             width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--header-text);
             cursor: pointer; transition: var(--transition); opacity: 0.5;
@@ -153,36 +148,36 @@
         }
 
         /* =========================================
-           [終極修正] iPhone 實機絕殺隔離 (Width <= 600px)
+           [終極修正] 全域歸零隔離 (Width <= 600px)
            ========================================= */
         @media (max-width: 600px) {
             body { padding: 0 !important; }
             .main-container { 
-                width: 100% !important; 
+                width: 100vw !important; 
                 max-width: none !important; 
-                padding: 15px 10px !important; 
+                padding: 15px 0 !important; 
+                margin: 0 !important;
                 box-sizing: border-box !important;
             }
             .grid-row-container { 
-                display: block !important; /* 暴力捨棄 Grid */
+                display: block !important; /* 彻底放棄 Grid */
             } 
             .floating-panel, #startPanel, #endPanel { 
                 width: 100% !important; 
                 display: flex !important;
                 flex-direction: column !important;
-                align-items: stretch !important; /* 強制橫向拉滿 */
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-                margin-bottom: 15px !important;
-                text-align: left !important;
+                align-items: center !important; /* 手機居中排版 */
+                margin: 0 0 15px 0 !important;
             }
             .section-tag { 
+                width: calc(100% - 20px) !important;
                 justify-content: flex-start !important; 
-                text-align: left !important;
+                margin-left: 10px;
             }
-            .input-group {
-                width: 100% !important;
-                align-items: stretch !important;
+            /* 強制撐滿且兩側留 10px 微隙 */
+            input, button, select, textarea, .mode-grid, .btn-action {
+                width: calc(100% - 20px) !important;
+                margin: 0 10px !important;
             }
         }
 
@@ -190,7 +185,6 @@
            按鈕動態與點擊回饋
            ========================================= */
         .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--grid-gap); width: 100%; }
-
         .mode-btn {
             padding: 18px 5px; text-align: center; border-radius: 12px; cursor: pointer;
             font-size: 0.85rem; font-weight: 900; background: rgba(0,0,0,0.1);
@@ -198,14 +192,10 @@
             transition: var(--transition); user-select: none; -webkit-tap-highlight-color: transparent;
         }
         .mode-btn.active {
-            background: var(--btn-primary); color: white; border-radius: 12px;
-            border: var(--active-border); box-shadow: 0 0 18px var(--glow-color); 
+            background: var(--btn-primary); color: white; border: var(--active-border); box-shadow: 0 0 18px var(--glow-color); 
         }
-
         .mode-btn:active, .btn-action:active, .btn-ocr:active, .skin-dot:active, .close-x:active {
-            transform: scale(0.95) !important;
-            filter: brightness(0.9);
-            transition: transform 0.1s ease !important;
+            transform: scale(0.95) !important; filter: brightness(0.9); transition: transform 0.1s ease !important;
         }
 
         .btn-action {
@@ -215,23 +205,16 @@
             box-shadow: 0 6px 0px rgba(0,0,0,0.1); user-select: none;
         }
 
-        .btn-ocr {
-            background: var(--pory-dark); color: white; padding: 14px; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.3); width: 100%; margin-top: 5px; font-weight: 800; cursor: pointer;
-        }
-
-        /* 時間框樣式 */
         #startTime, #endTime {
             background-color: var(--input-time-bg); color: var(--pory-cyan);
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 1.35rem; letter-spacing: 1px; text-align: center;
             border: 2px solid rgba(255, 255, 255, 0.15);
             text-shadow: 0 0 8px rgba(43, 192, 209, 0.5);
-            width: 100%;
         }
 
         input, select, textarea {
-            width: 100%; padding: 16px 15px; border: 2px solid transparent; border-radius: 12px;
+            padding: 16px 15px; border: 2px solid transparent; border-radius: 12px;
             background-color: var(--input-bg); color: var(--input-text); font-size: 1.05rem;
             font-weight: 600; transition: var(--transition); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             box-sizing: border-box; 
@@ -240,43 +223,35 @@
         .dimmed { opacity: 0.4 !important; filter: grayscale(0.4); }
 
         /* =========================================
-           [絕殺修正] 設定頁面實機校正
+           [修正] 設定頁面全屏滾動與 X 鈕
            ========================================= */
         .config-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: var(--overlay-bg); backdrop-filter: blur(25px);
-            z-index: 1000; display: flex; justify-content: center; 
-            align-items: flex-start !important; /* 頂部對齊防止切掉 */
-            padding: 20px 10px !important; 
-            overflow-y: auto; 
+            z-index: 1000; 
+            display: block !important; /* 改為 block 支援滾動 */
+            overflow-y: scroll !important; 
+            -webkit-overflow-scrolling: touch;
+            padding: 40px 0;
             transition: var(--transition);
         }
         .config-panel { 
-            width: 100% !important; 
-            max-width: 440px; background: transparent; 
-            display: flex; flex-direction: column; gap: 20px; 
-            position: relative;
-            max-height: none !important; /* 讓內容隨意撐開 */
-            margin-bottom: 50px; /* 底部預留避免被切 */
-        }
-        .config-header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 10px; min-height: 60px;
+            width: 100% !important; max-width: 440px; margin: 0 auto;
+            padding: 20px; box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 20px;
         }
         .config-header h2 { 
             margin: 0; font-style: italic; text-transform: uppercase; font-size: 2rem; 
             font-weight: 900; letter-spacing: 2px; color: var(--header-text); 
         }
 
-        /* [絕殺] X 鈕：固定在螢幕右上角，不隨捲動消失 */
+        /* 終極 X 鈕：固定在全屏最上方 */
         .close-x {
             width: 50px; height: 50px; background: #ef4444; color: white; border-radius: 50%;
             border: 4px solid #fff; display: flex; align-items: center; justify-content: center;
             font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
             transition: var(--transition); 
-            position: fixed !important; 
-            top: 20px; right: 20px; 
-            z-index: 9999;
+            position: fixed !important; top: 15px; right: 15px; z-index: 9999;
         }
 
         .status-toast {
@@ -370,7 +345,7 @@
         <button class="btn-action" onclick="handleSubmit()">上傳系統資料紀錄</button>
 
         <div style="display: flex; justify-content: space-between; margin-top: 15px; align-items: center;">
-            <span style="font-size: 0.75rem; color: var(--header-text); opacity: 0.6; font-weight: 900; letter-spacing: 1px;">系統 V1.12 [炎帝武祖 · 牧主齊聚]</span>
+            <span style="font-size: 0.75rem; color: var(--header-text); opacity: 0.6; font-weight: 900; letter-spacing: 1px;">系統 V1.13 [炎帝武祖 · 牧主齊聚]</span>
             <button onclick="showConfig()" style="background: rgba(0,0,0,0.1); border: 2px solid var(--header-text); color: var(--header-text); padding: 10px 24px; border-radius: 50px; cursor: pointer; font-weight: 900; font-size: 0.8rem;">⚙️ 系統設定</button>
         </div>
     </div>
@@ -422,7 +397,7 @@
 </div>
 
 <script>
-    /* JavaScript 完全保留原始邏輯，確保功能 100% 正常 */
+    /* JavaScript 完全保留原始邏輯，確保 ID 與功能 100% 正常 */
     const state = { cropper: null, mode: 'regular' };
     const el = {
         toast: document.getElementById('statusToast'),
@@ -504,7 +479,7 @@
     };
 
     window.renderReasons = (str) => {
-        el.reasonQuick.innerHTML = '<option value="" disabled selected>-- 快速選擇事由 --</option>';
+        el.reasonQuick.innerHTML = '<option value=\"\" disabled selected>-- 快速選擇事由 --</option>';
         str.split(/[,，\n]+/).map(s => s.trim()).filter(s => s).forEach(r => {
             const o = document.createElement('option'); o.value = o.textContent = r;
             el.reasonQuick.appendChild(o);
@@ -527,12 +502,12 @@
         const url = localStorage.getItem('gas_url');
         if(!url) return alert('請先設定 API 網址');
         const content = `
-            <div style="font-size: 4rem; color: #ef4444; margin-bottom: 10px;">⚠️</div>
-            <div style="font-size: 1.5rem; color: #ef4444; margin-bottom: 5px;">嚴重警告</div>
-            <div style="font-size: 1rem; color: #666; line-height: 1.6;">確定要重設範本嗎？<br>此動作將會覆蓋雲端定義且無法撤銷！</div>
-            <div style="display: flex; gap: 15px; width: 100%; margin-top: 20px;">
-                <button style="flex:1; padding:15px; border-radius:12px; border:none; background:#eee; font-weight:900; cursor:pointer;" onclick="closeToast()">取消返回</button>
-                <button style="flex:1; padding:15px; border-radius:12px; border:none; background:#ef4444; color:white; font-weight:900; cursor:pointer;" onclick="executeReset()">確認重設</button>
+            <div style=\"font-size: 4rem; color: #ef4444; margin-bottom: 10px;\">⚠️</div>
+            <div style=\"font-size: 1.5rem; color: #ef4444; margin-bottom: 5px;\">嚴重警告</div>
+            <div style=\"font-size: 1rem; color: #666; line-height: 1.6;\">確定要重設範本嗎？<br>此動作將會覆蓋雲端定義且無法撤銷！</div>
+            <div style=\"display: flex; gap: 15px; width: 100%; margin-top: 20px;\">
+                <button style=\"flex:1; padding:15px; border-radius:12px; border:none; background:#eee; font-weight:900; cursor:pointer;\" onclick=\"closeToast()\">取消返回</button>
+                <button style=\"flex:1; padding:15px; border-radius:12px; border:none; background:#ef4444; color:white; font-weight:900; cursor:pointer;\" onclick=\"executeReset()\">確認重設</button>
             </div>`;
         showSpecialModal(content, true);
     };
