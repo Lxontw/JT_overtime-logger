@@ -1,5 +1,5 @@
 <!-- 無盡火域：神魄登記 -->
-<!-- 2026.02.06 V1.11 全機型實機完工版：極致 RWD 鎖定與設定頁面高度修正 -->
+<!-- 2026.02.06 V1.12 iPhone 實機絕殺版：暴力滿版鎖定與設定頁面高度/X鈕全域修正 -->
 <!DOCTYPE html>
 <html lang="zh-TW" data-theme="poryphone">
 <head>
@@ -153,25 +153,27 @@
         }
 
         /* =========================================
-           [重點修正] 全機型實機滿版隔離 (Width <= 600px)
+           [終極修正] iPhone 實機絕殺隔離 (Width <= 600px)
            ========================================= */
         @media (max-width: 600px) {
             body { padding: 0 !important; }
             .main-container { 
                 width: 100% !important; 
                 max-width: none !important; 
-                padding: 15px 10px !important; /* 精確側邊內距 */
+                padding: 15px 10px !important; 
                 box-sizing: border-box !important;
             }
             .grid-row-container { 
-                display: block !important; /* 徹底放棄 Grid 引擎 */
+                display: block !important; /* 暴力捨棄 Grid */
             } 
-            #startPanel, #endPanel { 
+            .floating-panel, #startPanel, #endPanel { 
                 width: 100% !important; 
                 display: flex !important;
                 flex-direction: column !important;
-                align-items: stretch !important; /* 橫向填滿 */
-                margin: 0 0 15px 0 !important;
+                align-items: stretch !important; /* 強制橫向拉滿 */
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                margin-bottom: 15px !important;
                 text-align: left !important;
             }
             .section-tag { 
@@ -238,37 +240,43 @@
         .dimmed { opacity: 0.4 !important; filter: grayscale(0.4); }
 
         /* =========================================
-           [修正] 設定頁面高度與 X 鈕定位
+           [絕殺修正] 設定頁面實機校正
            ========================================= */
         .config-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--overlay-bg); backdrop-filter: blur(25px);
-            z-index: 1000; display: flex; justify-content: center; align-items: center;
-            padding: 20px; transition: var(--transition);
+            z-index: 1000; display: flex; justify-content: center; 
+            align-items: flex-start !important; /* 頂部對齊防止切掉 */
+            padding: 20px 10px !important; 
+            overflow-y: auto; 
+            transition: var(--transition);
         }
         .config-panel { 
-            width: 100%; max-width: 440px; background: transparent; 
-            display: flex; flex-direction: column; gap: 20px; position: relative;
-            max-height: 85vh; /* 防止實機切一半 */
-            overflow-y: auto; /* 超出可捲動 */
-            padding-right: 5px; /* 捲軸預留空間 */
+            width: 100% !important; 
+            max-width: 440px; background: transparent; 
+            display: flex; flex-direction: column; gap: 20px; 
+            position: relative;
+            max-height: none !important; /* 讓內容隨意撐開 */
+            margin-bottom: 50px; /* 底部預留避免被切 */
         }
         .config-header { 
             display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 10px; position: sticky; top: 0; z-index: 20; min-height: 60px;
+            margin-bottom: 10px; min-height: 60px;
         }
         .config-header h2 { 
             margin: 0; font-style: italic; text-transform: uppercase; font-size: 2rem; 
             font-weight: 900; letter-spacing: 2px; color: var(--header-text); 
         }
 
-        /* X 鈕：精確鎖定在面板標題列右側 */
+        /* [絕殺] X 鈕：固定在螢幕右上角，不隨捲動消失 */
         .close-x {
             width: 50px; height: 50px; background: #ef4444; color: white; border-radius: 50%;
             border: 4px solid #fff; display: flex; align-items: center; justify-content: center;
             font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
             transition: var(--transition); 
-            position: absolute; top: 0; right: 0; z-index: 30;
+            position: fixed !important; 
+            top: 20px; right: 20px; 
+            z-index: 9999;
         }
 
         .status-toast {
@@ -362,7 +370,7 @@
         <button class="btn-action" onclick="handleSubmit()">上傳系統資料紀錄</button>
 
         <div style="display: flex; justify-content: space-between; margin-top: 15px; align-items: center;">
-            <span style="font-size: 0.75rem; color: var(--header-text); opacity: 0.6; font-weight: 900; letter-spacing: 1px;">系統 V1.11 [炎帝武祖 · 牧主齊聚]</span>
+            <span style="font-size: 0.75rem; color: var(--header-text); opacity: 0.6; font-weight: 900; letter-spacing: 1px;">系統 V1.12 [炎帝武祖 · 牧主齊聚]</span>
             <button onclick="showConfig()" style="background: rgba(0,0,0,0.1); border: 2px solid var(--header-text); color: var(--header-text); padding: 10px 24px; border-radius: 50px; cursor: pointer; font-weight: 900; font-size: 0.8rem;">⚙️ 系統設定</button>
         </div>
     </div>
