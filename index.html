@@ -1,629 +1,333 @@
-<!-- 無盡火域：神魄登記 -->
-<!-- 2026.02.06 V1.12 iPhone 實機絕殺版：暴力滿版鎖定與設定頁面高度/X鈕全域修正 -->
-<!DOCTYPE html>
-<html lang="zh-TW" data-theme="poryphone">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>無盡火域：神魄登記</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
-    <style>
-        /* =========================================
-           核心主題變數 (Game UI Theme)
-           ========================================= */
-        :root {
-            --base-font-size: 16px;
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --pory-cyan: #2bc0d1;
-            --pory-dark: #1a6b7d;
-            --pory-accent: #57d5e5;
-            --warning-red: #ef4444;
-            --grid-gap: 12px; 
-        }
+/* =========================================
+   核心主題變數系統
+   ========================================= */
+:root {
+    --base-font-size: 18px;
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --grid-gap: 24px;
+    --input-gap: 12px;
+    --global-radius: 16px;
+    --global-btn-clip: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+    --warning-red: #ef4444;
+}
 
-        html { font-size: var(--base-font-size); }
+/* 1. Poryphone Theme */
+[data-theme="poryphone"] {
+    --bg: linear-gradient(180deg, #57d5e5 0%, #1a8a99 100%);
+    --text: #ffffff;
+    --input-bg: rgba(255, 255, 255, 0.15);
+    --input-border: rgba(255, 255, 255, 0.2);
+    --accent: #2bc0d1;
+    --btn-primary: linear-gradient(135deg, #4edeea, #26a9b8);
+    --btn-shadow: rgba(0, 0, 0, 0.2);
+}
 
-        [data-theme="poryphone"] {
-            --bg-gradient: linear-gradient(180deg, #57d5e5 0%, #1a8a99 100%);
-            --header-text: #ffffff;
-            --text-color: #ffffff;
-            --label-color: #b2f0f7;
-            --input-bg: rgba(255, 255, 255, 0.95);
-            --input-text: #1a6b7d;
-            --btn-primary: linear-gradient(135deg, #4edeea, #26a9b8);
-            --clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
-            --overlay-bg: rgba(26, 138, 153, 0.95);
-            --toast-bg: #ffffff;
-            --toast-text: #1a6b7d;
-            --active-dot-bg: #ffffff;
-            --active-dot-text: #1a6b7d;
-            --glow-color: rgba(255, 255, 255, 0.8);
-            --active-border: 2px solid #ffffff;
-            --input-time-bg: rgba(0, 0, 0, 0.25);
-        }
+/* 2. Light Theme */
+[data-theme="light"] {
+    --bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --text: #1e293b;
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --accent: #6366f1;
+    --btn-primary: linear-gradient(135deg, #6366f1, #4f46e5);
+    --btn-shadow: rgba(79, 70, 229, 0.2);
+}
 
-        [data-theme="light"] {
-            --bg-gradient: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
-            --header-text: #334155;
-            --text-color: #334155;
-            --label-color: #64748b;
-            --input-bg: #ffffff;
-            --input-text: #334155;
-            --btn-primary: linear-gradient(135deg, #64748b, #334155);
-            --clip-path: none;
-            --overlay-bg: rgba(248, 250, 252, 0.98);
-            --toast-bg: #ffffff;
-            --toast-text: #334155;
-            --active-dot-bg: #334155;
-            --active-dot-text: #ffffff;
-            --glow-color: rgba(79, 70, 229, 0.6);
-            --active-border: 2px solid #4f46e5;
-            --input-time-bg: rgba(0, 0, 0, 0.1);
-        }
+/* 3. Dark Theme */
+[data-theme="dark"] {
+    --bg: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+    --text: #ffffff;
+    --input-bg: rgba(30, 41, 59, 0.8);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --accent: #f59e0b;
+    --btn-primary: linear-gradient(135deg, #f59e0b, #d97706);
+    --btn-shadow: rgba(0, 0, 0, 0.4);
+}
 
-        [data-theme="dark"] {
-            --bg-gradient: linear-gradient(180deg, #111827 0%, #030712 100%);
-            --header-text: #ffffff;
-            --text-color: #ffffff;
-            --label-color: #94a3b8;
-            --input-bg: #1f2937;
-            --input-text: #ffffff;
-            --btn-primary: linear-gradient(135deg, #374151, #111827);
-            --clip-path: none;
-            --overlay-bg: rgba(17, 24, 39, 0.98);
-            --toast-bg: #1f2937;
-            --toast-text: #ffffff;
-            --active-dot-bg: #ffffff;
-            --active-dot-text: #111827;
-            --glow-color: #ffffff;
-            --active-border: 2px solid #ffffff;
-            --input-time-bg: rgba(255, 255, 255, 0.05);
-        }
+html { font-size: var(--base-font-size); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* =========================================
-           基礎佈局與過渡
-           ========================================= */
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg-gradient); background-attachment: fixed; color: var(--text-color);
-            margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; 
-            padding: 20px; overflow-x: hidden; transition: background 0.4s ease;
-        }
+body {
+    font-family: 'Inter', 'PingFang TC', sans-serif;
+    background: var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
-        body::before {
-            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.03) 0px, rgba(0, 0, 0, 0.03) 1px, transparent 1px, transparent 2px);
-            pointer-events: none; z-index: 100;
-        }
+.game-wrapper {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    padding: 40px 20px;
+}
 
-        /* 桌面版預設容器寬度 (大於 600px) */
-        .main-container {
-            width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: var(--grid-gap); z-index: 10;
-        }
+.main-container {
+    width: 100%;
+    max-width: 480px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: var(--grid-gap);
+}
 
-        header {
-            display: flex; justify-content: space-between; align-items: flex-end; padding: 0; margin-bottom: 5px;
-        }
+/* =========================================
+   Header 穩定佈局修正
+   ========================================= */
+.game-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
 
-        .brand-title {
-            font-size: 1.6rem; font-weight: 900; color: var(--header-text);
-            text-transform: uppercase; font-style: italic; letter-spacing: 1px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-wrap: nowrap;
+}
 
-        /* [鎖定] 橫排主題球樣式 (禁止變動) */
-        .skin-group { 
-            display: flex !important; 
-            flex-direction: row !important; 
-            gap: 8px !important; 
-            align-items: center !important; 
-        }
-        .skin-dot {
-            width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--header-text);
-            cursor: pointer; transition: var(--transition); opacity: 0.5;
-            display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 900;
-            background: transparent; color: var(--header-text);
-        }
-        .skin-dot.active { 
-            opacity: 1; transform: scale(1.1); background: var(--active-dot-bg); 
-            color: var(--active-dot-text); box-shadow: 0 0 12px var(--glow-color); border-color: var(--active-dot-bg);
-        }
+.mini-scaler-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--input-bg);
+    border: 2.5px solid var(--text);
+    padding: 6px 12px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text);
+    font-weight: 800;
+    flex-shrink: 0;
+}
 
-        /* 桌面版鎖定並排 */
-        .grid-row-container {
-            display: grid; grid-template-columns: 1fr 1fr;
-            column-gap: var(--grid-gap); row-gap: var(--grid-gap); width: 100%; box-sizing: border-box;
-        }
+.actions-right-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
 
-        #startPanel { align-items: flex-start; }
-        #endPanel { align-items: flex-end; }
-        #endPanel .section-tag { justify-content: flex-end; }
+.skin-group { 
+    display: flex; 
+    gap: 6px; 
+    flex-shrink: 0;
+}
 
-        .section-tag {
-            font-size: 0.75rem; font-weight: 900; color: var(--label-color);
-            text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; 
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.1); width: 100%; transition: var(--transition);
-        }
+.toggle-btn-container {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
 
-        .floating-panel {
-            background-color: transparent; border: none; padding: 0; position: relative;
-            display: flex; flex-direction: column; gap: 6px; transition: var(--transition); width: 100%;
-        }
+.skin-dot, .gear-btn, .close-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2.5px solid var(--text);
+    background: transparent;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 900;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
 
-        /* =========================================
-           [終極修正] iPhone 實機絕殺隔離 (Width <= 600px)
-           ========================================= */
-        @media (max-width: 600px) {
-            body { padding: 0 !important; }
-            .main-container { 
-                width: 100% !important; 
-                max-width: none !important; 
-                padding: 15px 10px !important; 
-                box-sizing: border-box !important;
-            }
-            .grid-row-container { 
-                display: block !important; /* 暴力捨棄 Grid */
-            } 
-            .floating-panel, #startPanel, #endPanel { 
-                width: 100% !important; 
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: stretch !important; /* 強制橫向拉滿 */
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-                margin-bottom: 15px !important;
-                text-align: left !important;
-            }
-            .section-tag { 
-                justify-content: flex-start !important; 
-                text-align: left !important;
-            }
-            .input-group {
-                width: 100% !important;
-                align-items: stretch !important;
-            }
-        }
+.skin-dot.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
 
-        /* =========================================
-           按鈕動態與點擊回饋
-           ========================================= */
-        .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--grid-gap); width: 100%; }
+/* 強制紅色關閉按鈕 */
+.close-btn {
+    background-color: var(--warning-red) !important;
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+}
 
-        .mode-btn {
-            padding: 18px 5px; text-align: center; border-radius: 12px; cursor: pointer;
-            font-size: 0.85rem; font-weight: 900; background: rgba(0,0,0,0.1);
-            color: var(--text-color); border: 2px solid transparent; 
-            transition: var(--transition); user-select: none; -webkit-tap-highlight-color: transparent;
-        }
-        .mode-btn.active {
-            background: var(--btn-primary); color: white; border-radius: 12px;
-            border: var(--active-border); box-shadow: 0 0 18px var(--glow-color); 
-        }
+.brand-title {
+    font-size: 1.8rem;
+    font-weight: 950;
+    color: var(--text);
+    letter-spacing: -1px;
+}
 
-        .mode-btn:active, .btn-action:active, .btn-ocr:active, .skin-dot:active, .close-x:active {
-            transform: scale(0.95) !important;
-            filter: brightness(0.9);
-            transition: transform 0.1s ease !important;
-        }
+/* =========================================
+   面板與照相機
+   ========================================= */
+.floating-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--input-gap);
+}
 
-        .btn-action {
-            width: 100%; padding: 20px; border: none; cursor: pointer; font-size: 1.2rem;
-            font-weight: 900; color: white; background: var(--btn-primary); border-radius: 15px;
-            clip-path: var(--clip-path); transition: var(--transition); 
-            box-shadow: 0 6px 0px rgba(0,0,0,0.1); user-select: none;
-        }
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
 
-        .btn-ocr {
-            background: var(--pory-dark); color: white; padding: 14px; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.3); width: 100%; margin-top: 5px; font-weight: 800; cursor: pointer;
-        }
+.section-tag {
+    font-size: 1rem;
+    font-weight: 950;
+    color: var(--text);
+    border-left: 6px solid var(--accent);
+    padding-left: 12px;
+    white-space: nowrap;
+}
 
-        /* 時間框樣式 */
-        #startTime, #endTime {
-            background-color: var(--input-time-bg); color: var(--pory-cyan);
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 1.35rem; letter-spacing: 1px; text-align: center;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            text-shadow: 0 0 8px rgba(43, 192, 209, 0.5);
-            width: 100%;
-        }
+.ocr-mini-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+    transition: var(--transition);
+}
 
-        input, select, textarea {
-            width: 100%; padding: 16px 15px; border: 2px solid transparent; border-radius: 12px;
-            background-color: var(--input-bg); color: var(--input-text); font-size: 1.05rem;
-            font-weight: 600; transition: var(--transition); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            box-sizing: border-box; 
-        }
+.ocr-mini-btn:active {
+    transform: scale(0.95);
+}
 
-        .dimmed { opacity: 0.4 !important; filter: grayscale(0.4); }
+/* =========================================
+   輸入組件
+   ========================================= */
+.mode-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
 
-        /* =========================================
-           [絕殺修正] 設定頁面實機校正
-           ========================================= */
-        .config-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--overlay-bg); backdrop-filter: blur(25px);
-            z-index: 1000; display: flex; justify-content: center; 
-            align-items: flex-start !important; /* 頂部對齊防止切掉 */
-            padding: 20px 10px !important; 
-            overflow-y: auto; 
-            transition: var(--transition);
-        }
-        .config-panel { 
-            width: 100% !important; 
-            max-width: 440px; background: transparent; 
-            display: flex; flex-direction: column; gap: 20px; 
-            position: relative;
-            max-height: none !important; /* 讓內容隨意撐開 */
-            margin-bottom: 50px; /* 底部預留避免被切 */
-        }
-        .config-header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 10px; min-height: 60px;
-        }
-        .config-header h2 { 
-            margin: 0; font-style: italic; text-transform: uppercase; font-size: 2rem; 
-            font-weight: 900; letter-spacing: 2px; color: var(--header-text); 
-        }
+.mode-btn {
+    padding: 14px 2px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    border-radius: 12px;
+    border: 2.5px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+}
 
-        /* [絕殺] X 鈕：固定在螢幕右上角，不隨捲動消失 */
-        .close-x {
-            width: 50px; height: 50px; background: #ef4444; color: white; border-radius: 50%;
-            border: 4px solid #fff; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            transition: var(--transition); 
-            position: fixed !important; 
-            top: 20px; right: 20px; 
-            z-index: 9999;
-        }
+.mode-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: #fff;
+}
 
-        .status-toast {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
-            background: var(--toast-bg); color: var(--toast-text); padding: 35px 25px; border-radius: 32px; 
-            font-weight: 900; z-index: 5000; opacity: 0; pointer-events: none;
-            display: flex; flex-direction: column; align-items: center; gap: 20px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.4); border: 6px solid var(--pory-cyan);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 85%; max-width: 380px;
-        }
-        .status-toast.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+input, select, textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2.5px solid var(--input-border);
+    border-radius: var(--global-radius);
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    outline: none;
+    transition: var(--transition);
+}
 
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
+.grid-row-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
 
-<div id="overlay-bg"></div>
-<div id="statusToast" class="status-toast"></div>
+/* =========================================
+   按鈕
+   ========================================= */
+.btn-action {
+    width: 100%;
+    padding: 22px;
+    background: var(--btn-primary);
+    color: #fff;
+    border: none;
+    font-size: 1.25rem;
+    font-weight: 950;
+    clip-path: var(--global-btn-clip);
+    cursor: pointer;
+    box-shadow: 0 8px 0 var(--btn-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: 0.2s;
+}
 
-<div class="main-container">
-    <header>
-        <div class="brand-title">無盡火域：神魄登記</div>
-        <div class="skin-group">
-            <div class="skin-dot" id="s-poryphone" onclick="setTheme('poryphone')">P</div>
-            <div class="skin-dot" id="s-light" onclick="setTheme('light')">L</div>
-            <div class="skin-dot" id="s-dark" onclick="setTheme('dark')">D</div>
-        </div>
-    </header>
+.btn-action:active {
+    transform: translateY(4px);
+    box-shadow: 0 4px 0 var(--btn-shadow);
+}
 
-    <!-- 介面縮放比例 -->
-    <div class="floating-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; position:relative;">
-            <div class="section-tag">介面縮放比例</div>
-            <b id="fsVal" style="font-size: 1rem; color: var(--pory-cyan); position:absolute; right:10px; top:-2px;">16px</b>
-        </div>
-        <input type="range" id="fsSlider" min="14" max="22" value="16" style="width: 100%;" oninput="updateFontSize(this.value)">
-    </div>
+.btn-action.danger {
+    background: var(--warning-red) !important;
+    box-shadow: 0 8px 0 rgba(185, 28, 28, 0.4) !important;
+    margin-top: 10px;
+}
 
-    <!-- 日期選擇 -->
-    <div class="floating-panel">
-        <div class="section-tag">日期選擇</div>
-        <div class="input-group">
-            <input type="date" id="dateIn" required>
-        </div>
-    </div>
-
-    <!-- 下班項目設定 -->
-    <div class="floating-panel">
-        <div class="section-tag">下班項目設定</div>
-        <div class="mode-grid">
-            <div class="mode-btn active" id="m-regular" onclick="setMode('regular')">常規下班</div>
-            <div class="mode-btn" id="m-overtime" onclick="setMode('overtime')">特定加班</div>
-            <div class="mode-btn" id="m-special" onclick="setMode('special')">特殊時段</div>
-        </div>
-    </div>
-
-    <!-- 開始與結束時間 -->
-    <div class="grid-row-container">
-        <div class="floating-panel" id="startPanel">
-            <div class="section-tag">開始時間</div>
-            <div class="input-group" id="startInputGroup">
-                <input type="time" id="startTime" oninput="wakeUp('startInputGroup')">
-            </div>
-        </div>
-
-        <div class="floating-panel" id="endPanel">
-            <div class="section-tag">結束時間</div>
-            <div class="input-group" id="endInputGroup">
-                <input type="time" id="endTime" required oninput="wakeUp('endInputGroup')">
-            </div>
-        </div>
-    </div>
-
-    <!-- 事由與提交 -->
-    <div class="floating-panel">
-        <div class="section-tag">加班事由 / 活動內容</div>
-        <div class="input-group">
-            <div class="select-wrapper dimmed" id="reasonQuickWrapper">
-                <select id="reasonQuick" onchange="handleQuickReasonChange()">
-                </select>
-            </div>
-            <textarea id="reasonMain" rows="3" placeholder="請在此輸入加班細節內容..."></textarea>
-            
-            <button class="btn-ocr" onclick="document.getElementById('ocrInput').click()">
-                📷 啟動智慧文字辨識 (OCR)
-            </button>
-            <input type="file" id="ocrInput" accept="image/*" class="hidden" onchange="openCrop(this)">
-        </div>
-
-        <button class="btn-action" onclick="handleSubmit()">上傳系統資料紀錄</button>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 15px; align-items: center;">
-            <span style="font-size: 0.75rem; color: var(--header-text); opacity: 0.6; font-weight: 900; letter-spacing: 1px;">系統 V1.12 [炎帝武祖 · 牧主齊聚]</span>
-            <button onclick="showConfig()" style="background: rgba(0,0,0,0.1); border: 2px solid var(--header-text); color: var(--header-text); padding: 10px 24px; border-radius: 50px; cursor: pointer; font-weight: 900; font-size: 0.8rem;">⚙️ 系統設定</button>
-        </div>
-    </div>
-</div>
-
-<!-- 設定頁面 -->
-<div id="configOverlay" class="config-overlay hidden">
-    <div class="config-panel">
-        <div class="config-header">
-            <h2>系統設定</h2>
-            <div class="close-x" onclick="hideConfig()">✕</div>
-        </div>
-        
-        <div class="floating-panel">
-            <div class="section-tag">一般參數設定</div>
-            <div class="input-group">
-                <label style="font-size:0.75rem; font-weight:900; color:var(--label-color); margin-bottom: 2px;">使用者姓名</label>
-                <input type="text" id="cfgName" placeholder="例如：牧塵、洛璃">
-            </div>
-            <div class="input-group" style="margin-top: 5px;">
-                <label style="font-size:0.75rem; font-weight:900; color:var(--label-color); margin-bottom: 2px;">GAS API 伺服器網址</label>
-                <input type="text" id="cfgUrl" placeholder="https://script.google.com/...">
-            </div>
-            <div class="input-group" style="margin-top: 5px;">
-                <label style="font-size:0.75rem; font-weight:900; color:var(--label-color); margin-bottom: 2px;">常用加班事由 (以逗號分隔)</label>
-                <textarea id="cfgReasons" rows="8" placeholder="輸入事由，每個以逗號分隔..."></textarea>
-            </div>
-            <button class="btn-action" style="margin-top: 10px;" onclick="saveConfig()">儲存所有設定</button>
-        </div>
-
-        <div class="floating-panel" style="margin-top: 5px;">
-            <div class="section-tag" style="color: var(--warning-red);">管理員進階工具</div>
-            <button class="btn-action" style="background: #ef4444; font-size: 1rem; padding: 15px; clip-path: none;" onclick="confirmReset()">
-                ⚠️ 重設 Google 試算表範本
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- OCR 圖片裁切彈窗 -->
-<div id="cropModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:3000; display:flex; flex-direction:column;">
-    <div style="flex:1; position:relative; overflow:hidden;">
-        <img id="cropImg" style="max-width:100%;">
-    </div>
-    <div style="padding: 20px; background:#fff; display:flex; gap:10px;">
-        <button class="btn-action" style="background:#666; clip-path:none;" onclick="closeCrop()">取消</button>
-        <button class="btn-action" id="ocrGo" style="clip-path:none;" onclick="doOCR()">確定辨識</button>
-    </div>
-</div>
-
-<script>
-    /* JavaScript 完全保留原始邏輯，確保功能 100% 正常 */
-    const state = { cropper: null, mode: 'regular' };
-    const el = {
-        toast: document.getElementById('statusToast'),
-        overlayBg: document.getElementById('overlay-bg'),
-        fsSlider: document.getElementById('fsSlider'),
-        fsVal: document.getElementById('fsVal'),
-        date: document.getElementById('dateIn'),
-        start: document.getElementById('startTime'),
-        end: document.getElementById('endTime'),
-        startInputGroup: document.getElementById('startInputGroup'),
-        endInputGroup: document.getElementById('endInputGroup'),
-        reason: document.getElementById('reasonMain'),
-        reasonQuick: document.getElementById('reasonQuick'),
-        reasonQuickWrapper: document.getElementById('reasonQuickWrapper'),
-        cfgOverlay: document.getElementById('configOverlay'),
-        cfgName: document.getElementById('cfgName'),
-        cfgUrl: document.getElementById('cfgUrl'),
-        cfgReasons: document.getElementById('cfgReasons'),
-        cropModal: document.getElementById('cropModal'),
-        cropImg: document.getElementById('cropImg'),
-        ocrGo: document.getElementById('ocrGo')
-    };
-
-    window.onload = () => {
-        const url = localStorage.getItem('gas_url');
-        const theme = localStorage.getItem('theme') || 'poryphone';
-        const fontSize = localStorage.getItem('base_font_size') || '16';
-        const reasons = localStorage.getItem('custom_reasons') || "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
-        setTheme(theme);
-        updateFontSize(fontSize);
-        el.fsSlider.value = fontSize;
-        el.cfgName.value = localStorage.getItem('user_name') || '';
-        el.cfgUrl.value = url || '';
-        el.cfgReasons.value = reasons;
-        renderReasons(reasons);
-        const now = new Date();
-        el.date.valueAsDate = now;
-        el.end.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        el.endInputGroup.classList.add('dimmed');
-        if (!url) showConfig();
-        setMode('regular');
-    };
-
-    window.setTheme = (t) => {
-        document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem('theme', t);
-        document.querySelectorAll('.skin-dot').forEach(d => d.classList.toggle('active', d.id === 's-' + t));
-    };
-
-    window.updateFontSize = (v) => {
-        document.documentElement.style.setProperty('--base-font-size', v + 'px');
-        el.fsVal.textContent = v + 'px';
-        localStorage.setItem('base_font_size', v);
-    };
-
-    window.setMode = (m) => {
-        state.mode = m;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.id === 'm-' + m));
-        const stdOff = localStorage.getItem('std_off') || '17:30';
-        const stdStart = localStorage.getItem('std_start') || '08:30';
-        if (m === 'regular') {
-            el.startInputGroup.classList.add('dimmed');
-            el.start.value = stdOff;
-        } else {
-            el.startInputGroup.classList.remove('dimmed');
-            el.start.value = (m === 'overtime') ? stdOff : stdStart;
-        }
-    };
-
-    window.wakeUp = (id) => {
-        document.getElementById(id).classList.remove('dimmed');
-    };
-
-    window.handleQuickReasonChange = () => {
-        if(el.reasonQuick.value) {
-            el.reason.value = el.reasonQuick.value;
-            el.reasonQuickWrapper.classList.remove('dimmed');
-        }
-    };
-
-    window.renderReasons = (str) => {
-        el.reasonQuick.innerHTML = '<option value="" disabled selected>-- 快速選擇事由 --</option>';
-        str.split(/[,，\n]+/).map(s => s.trim()).filter(s => s).forEach(r => {
-            const o = document.createElement('option'); o.value = o.textContent = r;
-            el.reasonQuick.appendChild(o);
-        });
-    };
-
-    window.showConfig = () => el.cfgOverlay.classList.remove('hidden');
-    window.hideConfig = () => el.cfgOverlay.classList.add('hidden');
-
-    window.saveConfig = () => {
-        localStorage.setItem('gas_url', el.cfgUrl.value.trim());
-        localStorage.setItem('user_name', el.cfgName.value.trim());
-        localStorage.setItem('custom_reasons', el.cfgReasons.value);
-        renderReasons(el.cfgReasons.value);
-        toast('✅ 設定已成功儲存');
-        setTimeout(hideConfig, 800);
-    };
-
-    window.confirmReset = () => {
-        const url = localStorage.getItem('gas_url');
-        if(!url) return alert('請先設定 API 網址');
-        const content = `
-            <div style="font-size: 4rem; color: #ef4444; margin-bottom: 10px;">⚠️</div>
-            <div style="font-size: 1.5rem; color: #ef4444; margin-bottom: 5px;">嚴重警告</div>
-            <div style="font-size: 1rem; color: #666; line-height: 1.6;">確定要重設範本嗎？<br>此動作將會覆蓋雲端定義且無法撤銷！</div>
-            <div style="display: flex; gap: 15px; width: 100%; margin-top: 20px;">
-                <button style="flex:1; padding:15px; border-radius:12px; border:none; background:#eee; font-weight:900; cursor:pointer;" onclick="closeToast()">取消返回</button>
-                <button style="flex:1; padding:15px; border-radius:12px; border:none; background:#ef4444; color:white; font-weight:900; cursor:pointer;" onclick="executeReset()">確認重設</button>
-            </div>`;
-        showSpecialModal(content, true);
-    };
-
-    window.executeReset = () => {
-        const url = localStorage.getItem('gas_url');
-        closeToast();
-        toast('⏳ 重設請求傳送中...');
-        const fd = new FormData(); fd.append('action', 'reset_template');
-        fetch(url, { method: 'POST', body: fd })
-            .then(r => r.json()).then(d => {
-                if(d.result === 'success' || d.status === 'success') {
-                    toast('✅ 範本重設成功');
-                    setTimeout(() => {
-                        alert('✅ 範本已成功重設！\n\n下次建立新月份時將套用新格式。\n(舊的月份需要手動刪除工作表才會生效)');
-                    }, 800);
-                } else {
-                    alert('❌ 重設失敗: ' + (d.error || '未知錯誤'));
-                }
-            }).catch(() => alert('❌ 連線異常'));
-    };
-
-    window.handleSubmit = () => {
-        const url = localStorage.getItem('gas_url');
-        if(!url) return toast('⚠️ 請先完成系統設定');
-        if(!el.reason.value) return toast('⚠️ 請填寫加班內容');
-        toast('📡 正在上傳至雲端...');
-        const fd = new FormData();
-        fd.append('action', 'submit');
-        fd.append('date', el.date.value);
-        fd.append('name', localStorage.getItem('user_name') || '未命名');
-        fd.append('startTime', state.mode === 'regular' && el.startInputGroup.classList.contains('dimmed') ? '' : el.start.value);
-        fd.append('endTime', el.end.value);
-        fd.append('reason', el.reason.value);
-        fetch(url, { method: 'POST', body: fd })
-            .then(r => r.json()).then(d => {
-                if(d.result === 'success' || d.status === 'success') {
-                    toast('✨ 登記成功！');
-                    el.reason.value = '';
-                    el.endInputGroup.classList.add('dimmed');
-                    el.reasonQuickWrapper.classList.add('dimmed');
-                    if(state.mode === 'regular') el.startInputGroup.classList.add('dimmed');
-                } else toast('❌ 登記失敗');
-            }).catch(() => toast('❌ 網路通訊錯誤'));
-    };
-
-    function toast(txt) {
-        el.toast.innerHTML = txt;
-        el.toast.className = 'status-toast show';
-        el.overlayBg.classList.add('show');
-        setTimeout(closeToast, 2200);
+/* =========================================
+   RWD
+   ========================================= */
+@media (max-width: 480px) {
+    .game-wrapper {
+        align-items: flex-start;
+        padding: 24px 16px;
     }
+    .main-container { gap: 20px; }
+    .brand-title { font-size: 1.5rem; }
+}
 
-    function showSpecialModal(html, isWarning = false) {
-        el.toast.innerHTML = html;
-        el.toast.className = 'status-toast show' + (isWarning ? ' warning' : '');
-        el.overlayBg.classList.add('show');
-    }
+/* 其他通知 */
+.status-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    color: #333;
+    padding: 20px 40px;
+    border-radius: 50px;
+    font-weight: 900;
+    z-index: 5000;
+    border: 5px solid var(--accent);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+.status-toast.error { border-color: var(--warning-red); }
 
-    window.closeToast = () => {
-        el.toast.classList.remove('show');
-        el.overlayBg.classList.remove('show');
-    };
-
-    window.openCrop = (input) => {
-        if(!input.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            el.cropImg.src = e.target.result;
-            el.cropModal.classList.remove('hidden');
-            if(state.cropper) state.cropper.destroy();
-            state.cropper = new Cropper(el.cropImg, { viewMode: 1, autoCropArea: 0.8 });
-        };
-        reader.readAsDataURL(input.files[0]);
-    };
-
-    window.closeCrop = () => { el.cropModal.classList.add('hidden'); if(state.cropper) state.cropper.destroy(); };
-
-    window.doOCR = () => {
-        const url = localStorage.getItem('gas_url');
-        if(!url) return alert('請先設定 API');
-        el.ocrGo.textContent = '辨識中...';
-        const b64 = state.cropper.getCroppedCanvas({maxWidth: 800}).toDataURL('image/jpeg', 0.7).split(',')[1];
-        const fd = new FormData(); fd.append('action', 'ocr'); fd.append('image', b64);
-        fetch(url, { method: 'POST', body: fd })
-            .then(r => r.json()).then(d => {
-                const res = d.text || (d.data ? d.data.text : "");
-                if(res) { el.reason.value = res; toast('✨ 辨識成功'); }
-                else toast('❌ 無法辨識');
-            }).finally(() => { el.ocrGo.textContent = '確定辨識'; closeCrop(); });
-    };
-</script>
-</body>
-</html>
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
