@@ -9,16 +9,18 @@
     
     <style>
         /* =========================================
-           系統配置與主題變數
+           系統配置與 UI 變數 (CSS Variables)
            ========================================= */
         :root {
             --base-font-size: 18px;
             --global-radius: 16px;
+            /* 按鈕裁切形狀：營造科技感/寶可夢風格 */
             --global-btn-clip: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
             --warning-red: #ef4444;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* 主題配色定義 */
         [data-theme="poryphone"] {
             --bg: linear-gradient(180deg, #57d5e5 0%, #1a8a99 100%);
             --text: #ffffff;
@@ -58,6 +60,7 @@
             transition: var(--transition);
         }
 
+        /* 按鈕組件：包含立體陰影與點擊下沉效果 */
         .btn-action {
             clip-path: var(--global-btn-clip);
             background: var(--btn-primary);
@@ -73,6 +76,7 @@
             box-shadow: 0 8px 0 rgba(185, 28, 28, 0.4) !important;
         }
 
+        /* 表單元素通用樣式 */
         input, select, textarea {
             background: var(--input-bg);
             border: 2.5px solid var(--input-border);
@@ -81,6 +85,7 @@
             outline: none;
         }
 
+        /* 圓形切換按鈕 */
         .skin-dot, .gear-btn, .close-btn {
             width: 42px;
             height: 42px;
@@ -96,11 +101,6 @@
             border-color: white;
             transform: translateY(-2px);
         }
-        .close-btn {
-            background-color: var(--warning-red) !important;
-            color: white !important;
-            border-color: white !important;
-        }
 
         .section-tag {
             border-left: 6px solid var(--accent);
@@ -110,8 +110,7 @@
 
         #bg-canvas {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             z-index: -1;
             pointer-events: none;
         }
@@ -139,7 +138,7 @@
                         <button id="btn-to-settings" onclick="showTab('settings')" class="gear-btn">
                             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                         </button>
-                        <button id="btn-to-home" onclick="showTab('home')" class="close-btn hidden">
+                        <button id="btn-to-home" onclick="showTab('home')" class="close-btn hidden bg-red-500">
                             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
                     </div>
@@ -182,7 +181,7 @@
                             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                         </button>
                     </div>
-                    <select id="quick-reason" class="p-4 font-bold mb-2" onchange="applyQuickReason()">
+                    <select id="quick-reason" class="p-4 font-bold mb-2 text-black" onchange="applyQuickReason()">
                         <option value="" disabled selected>-- 快速事由選擇 --</option>
                     </select>
                     <textarea id="input-reason" rows="3" class="p-4 font-bold" placeholder="請輸入詳細內容..."></textarea>
@@ -204,8 +203,8 @@
                             <input type="text" id="cfg-name" class="p-4 w-full" placeholder="您的姓名">
                         </div>
                         <div>
-                            <label class="text-xs font-black opacity-60 uppercase mb-1 block">GAS 服務 URL (僅供記錄)</label>
-                            <input type="text" id="cfg-url" class="p-4 w-full" placeholder="GAS Web App 自動對接" readonly opacity-50>
+                            <label class="text-xs font-black opacity-60 uppercase mb-1 block">GAS 部署網址 (WebApp URL)</label>
+                            <input type="text" id="cfg-url" class="p-4 w-full" placeholder="https://script.google.com/...">
                         </div>
                         <div>
                             <label class="text-xs font-black opacity-60 uppercase mb-1 block">自定義快速事由 (逗號分隔)</label>
@@ -215,8 +214,9 @@
                 </div>
 
                 <div class="flex flex-col gap-3">
-                    <button onclick="saveSettings()" class="btn-action w-full py-5 font-black text-white">儲存設定並返回</button>
-                    <button onclick="resetSystem()" class="btn-action btn-danger w-full py-5 font-black text-white">重製系統並清除快取</button>
+                    <button onclick="saveSettings()" class="btn-action w-full py-5 font-black text-white">儲存並返回</button>
+                    <button onclick="remoteResetTemplate()" class="btn-action w-full py-5 font-black text-white bg-slate-600">重置雲端試算表範本</button>
+                    <button onclick="resetSystem()" class="btn-action btn-danger w-full py-5 font-black text-white">清除本機所有快取</button>
                 </div>
                 
                 <div id="version-label" class="text-center opacity-40 text-xs mt-4">版本載入中...</div>
@@ -232,11 +232,12 @@
 
     <script>
         /* ============================================================
-           [ 系統配置區 ]
+           [ 系統配置與狀態管理 ]
            ============================================================ */
         const CONFIG = {
+            GAS_URL: '', // 預設留空，需從設定頁輸入
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V1.31 [GAS google.script.run 版]',
+            VERSION: 'V6.00 [GAS 對接優化版]',
             FONT_STEPS: [14, 18, 22]
         };
 
@@ -245,17 +246,21 @@
             theme: localStorage.getItem('theme') || 'poryphone',
             fontSize: parseInt(localStorage.getItem('base_font_size')) || 18,
             mode: 'regular',
+            apiUrl: localStorage.getItem('gas_url') || CONFIG.GAS_URL,
             customReasons: localStorage.getItem('custom_reasons') || CONFIG.DEFAULT_REASONS,
             name: localStorage.getItem('user_name') || ''
         };
 
+        // 頁面加載初始化
         window.onload = () => {
             initBackground();
             applyTheme(state.theme);
             applyFontSize(state.fontSize);
             updateTimeByMode('regular');
             
+            // 填寫設定欄位預設值
             document.getElementById('cfg-name').value = state.name;
+            document.getElementById('cfg-url').value = state.apiUrl;
             document.getElementById('cfg-reasons').value = state.customReasons;
             document.getElementById('version-label').innerText = '版本 ' + CONFIG.VERSION;
             document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
@@ -263,28 +268,17 @@
             refreshQuickReasons();
         };
 
-        /* UI 與 功能邏輯 (保持不變) */
+        /* ============================================================
+           [ UI 控制邏輯 ]
+           ============================================================ */
         function showTab(tab) {
             state.activeTab = tab;
-            const home = document.getElementById('tab-home');
-            const settings = document.getElementById('tab-settings');
-            const toSet = document.getElementById('btn-to-settings');
-            const toHome = document.getElementById('btn-to-home');
-            const title = document.getElementById('page-title');
-
-            if (tab === 'home') {
-                home.classList.remove('hidden');
-                settings.classList.add('hidden');
-                toSet.classList.remove('hidden');
-                toHome.classList.add('hidden');
-                title.innerText = '無盡火域：神魄登記';
-            } else {
-                home.classList.add('hidden');
-                settings.classList.remove('hidden');
-                toSet.classList.add('hidden');
-                toHome.classList.remove('hidden');
-                title.innerText = '核心系統設置';
-            }
+            const isHome = tab === 'home';
+            document.getElementById('tab-home').classList.toggle('hidden', !isHome);
+            document.getElementById('tab-settings').classList.toggle('hidden', isHome);
+            document.getElementById('btn-to-settings').classList.toggle('hidden', !isHome);
+            document.getElementById('btn-to-home').classList.toggle('hidden', isHome);
+            document.getElementById('page-title').innerText = isHome ? '無盡火域：神魄登記' : '核心系統設置';
         }
 
         function setTheme(t) {
@@ -296,173 +290,192 @@
         function applyTheme(t) {
             document.documentElement.setAttribute('data-theme', t);
             document.querySelectorAll('.skin-dot').forEach(btn => btn.classList.remove('active'));
-            if (t === 'poryphone') document.getElementById('theme-p').classList.add('active');
-            if (t === 'light') document.getElementById('theme-l').classList.add('active');
-            if (t === 'dark') document.getElementById('theme-d').classList.add('active');
+            const activeId = t === 'poryphone' ? 'theme-p' : (t === 'light' ? 'theme-l' : 'theme-d');
+            document.getElementById(activeId).classList.add('active');
             
+            // 根據主題切換相機按鈕主色
             const ocrBtn = document.getElementById('ocr-btn-style');
-            if (t === 'poryphone') ocrBtn.style.background = '#2bc0d1';
-            else if (t === 'light') ocrBtn.style.background = '#6366f1';
-            else ocrBtn.style.background = '#f59e0b';
+            const colors = { 'poryphone': '#2bc0d1', 'light': '#6366f1', 'dark': '#f59e0b' };
+            ocrBtn.style.background = colors[t];
         }
 
         function toggleFontSize() {
             const idx = CONFIG.FONT_STEPS.indexOf(state.fontSize);
-            const nextIdx = (idx + 1) % CONFIG.FONT_STEPS.length;
-            state.fontSize = CONFIG.FONT_STEPS[nextIdx];
+            state.fontSize = CONFIG.FONT_STEPS[(idx + 1) % CONFIG.FONT_STEPS.length];
             localStorage.setItem('base_font_size', state.fontSize);
             applyFontSize(state.fontSize);
         }
 
         function applyFontSize(size) {
             document.documentElement.style.setProperty('--base-font-size', size + 'px');
-            const label = size === 14 ? '小' : size === 18 ? '中' : '大';
-            document.getElementById('font-label').innerText = label;
+            const labels = { 14: '小', 18: '中', 22: '大' };
+            document.getElementById('font-label').innerText = labels[size];
         }
 
         function setMode(m) {
             state.mode = m;
-            document.querySelectorAll('[id^="mode-"]').forEach(btn => btn.classList.remove('active', 'border-white', 'bg-opacity-100'));
-            const activeBtn = document.getElementById('mode-' + m);
-            activeBtn.classList.add('active', 'border-white', 'bg-opacity-100');
+            document.querySelectorAll('[id^="mode-"]').forEach(btn => 
+                btn.classList.remove('border-white', 'bg-opacity-100'));
+            document.getElementById('mode-' + m).classList.add('border-white', 'bg-opacity-100');
             updateTimeByMode(m);
         }
 
         function updateTimeByMode(m) {
-            const stdOff = '17:30';
-            const stdStart = '08:30';
-            const nowTime = new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            const now = new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
             if (m === 'regular' || m === 'overtime') {
-                document.getElementById('input-startTime').value = stdOff;
-                document.getElementById('input-endTime').value = nowTime;
+                document.getElementById('input-startTime').value = '17:30';
             } else {
-                document.getElementById('input-startTime').value = stdStart;
-                document.getElementById('input-endTime').value = nowTime;
+                document.getElementById('input-startTime').value = '08:30';
             }
+            document.getElementById('input-endTime').value = now;
         }
 
         function refreshQuickReasons() {
             const select = document.getElementById('quick-reason');
             select.innerHTML = '<option value="" disabled selected>-- 快速事由選擇 --</option>';
-            const list = state.customReasons.split(/[,，\n]+/).map(s => s.trim()).filter(s => s);
-            list.forEach(r => {
-                const opt = document.createElement('option');
-                opt.value = r;
-                opt.innerText = r;
-                select.appendChild(opt);
+            state.customReasons.split(/[,，\n]+/).map(s => s.trim()).filter(Boolean).forEach(r => {
+                const opt = new Option(r, r);
+                select.add(opt);
             });
         }
 
         function applyQuickReason() {
-            const val = document.getElementById('quick-reason').value;
-            if (val) document.getElementById('input-reason').value = val;
+            document.getElementById('input-reason').value = document.getElementById('quick-reason').value;
+        }
+
+        /* ============================================================
+           [ GAS 核心對接邏輯 - 使用 URLSearchParams 確保 doPost 兼容 ]
+           ============================================================ */
+        
+        // 1. OCR 圖片辨識
+        async function handleOCR(input) {
+            const file = input.files[0];
+            if (!file || !checkApiUrl()) return;
+
+            setLoading(true);
+            const reader = new FileReader();
+            reader.onload = async () => {
+                // 取得純 Base64 字串
+                const base64 = reader.result.split(',')[1];
+                
+                // 使用 URLSearchParams 以匹配 GS 的 e.parameter
+                const params = new URLSearchParams();
+                params.append('action', 'ocr');
+                params.append('image', base64);
+                
+                try {
+                    const res = await fetch(state.apiUrl, { 
+                        method: 'POST', 
+                        body: params,
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    });
+                    const data = await res.json();
+                    if (data.result === 'success') {
+                        document.getElementById('input-reason').value = data.text;
+                        showToast('✨ 辨識成功');
+                    } else {
+                        showToast('❌ ' + (data.error || '無法辨識'), true);
+                    }
+                } catch (e) {
+                    showToast('❌ 網路異常或圖片過大', true);
+                } finally {
+                    setLoading(false);
+                    input.value = ''; // 清除檔案選取以利下次選取同一張
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 2. 提交數據至雲端
+        async function submitData() {
+            const date = document.getElementById('input-date').value;
+            const start = document.getElementById('input-startTime').value;
+            const end = document.getElementById('input-endTime').value;
+            const reason = document.getElementById('input-reason').value.trim();
+
+            if (!checkApiUrl()) return;
+            if (!reason || !state.name) return showToast('⚠️ 請填寫內容與設定姓名', true);
+
+            setLoading(true);
+            const params = new URLSearchParams();
+            params.append('action', 'submit');
+            params.append('name', state.name);
+            params.append('date', date);
+            params.append('startTime', start);
+            params.append('endTime', end);
+            params.append('reason', reason);
+
+            try {
+                const res = await fetch(state.apiUrl, { 
+                    method: 'POST', 
+                    body: params,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+                const data = await res.json();
+                if (data.result === 'success') {
+                    showToast('✨ 登記成功！');
+                    document.getElementById('input-reason').value = '';
+                } else {
+                    showToast('❌ ' + (data.error || '登記失敗'), true);
+                }
+            } catch (e) {
+                showToast('❌ 傳輸失敗', true);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // 3. 遠端重置 Template (對接 GS 的 reset_template)
+        async function remoteResetTemplate() {
+            if (!confirm("此操作將刪除並重新建立試算表中的 Template 頁面，確定嗎？") || !checkApiUrl()) return;
+            
+            setLoading(true);
+            const params = new URLSearchParams();
+            params.append('action', 'reset_template');
+            
+            try {
+                const res = await fetch(state.apiUrl, { method: 'POST', body: params });
+                const data = await res.json();
+                if (data.result === 'success') showToast('✅ 雲端範本重置成功');
+                else showToast('❌ ' + data.error, true);
+            } catch (e) {
+                showToast('❌ 操作失敗', true);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        /* ============================================================
+           [ 工具函式 ]
+           ============================================================ */
+        function checkApiUrl() {
+            if (!state.apiUrl || state.apiUrl.length < 20) {
+                showToast('⚠️ 請先在設定頁配置 GAS URL', true);
+                showTab('settings');
+                return false;
+            }
+            return true;
         }
 
         function saveSettings() {
             state.name = document.getElementById('cfg-name').value.trim();
+            state.apiUrl = document.getElementById('cfg-url').value.trim();
             state.customReasons = document.getElementById('cfg-reasons').value.trim();
+            
             localStorage.setItem('user_name', state.name);
+            localStorage.setItem('gas_url', state.apiUrl);
             localStorage.setItem('custom_reasons', state.customReasons);
+            
             refreshQuickReasons();
             showToast('✅ 設定已儲存');
             showTab('home');
         }
 
         function resetSystem() {
-            if (confirm("確定要重製所有設定並清除快取嗎？")) {
+            if (confirm("這會清除手機上的所有儲存設定（姓名、網址、事由），確定嗎？")) {
                 localStorage.clear();
                 window.location.reload();
             }
-        }
-
-        /* ============================================================
-           [ 核心接口區 - 改為 GAS google.script.run ]
-           ============================================================ */
-        
-        // 圖片壓縮邏輯
-        async function compressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1024;
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > MAX_WIDTH) {
-                            height *= MAX_WIDTH / width;
-                            width = MAX_WIDTH;
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
-                    };
-                };
-            });
-        }
-
-        async function handleOCR(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            setLoading(true);
-            try {
-                const base64Data = await compressImage(file);
-                google.script.run
-                    .withSuccessHandler((data) => {
-                        setLoading(false);
-                        if (data.result === 'success') {
-                            document.getElementById('input-reason').value = data.text;
-                            showToast('✨ 辨識成功');
-                        } else {
-                            showToast('❌ ' + (data.error || '無法辨識'), true);
-                        }
-                    })
-                    .withFailureHandler((err) => {
-                        setLoading(false);
-                        showToast('❌ GAS 調用失敗', true);
-                    })
-                    .processImage(base64Data);
-            } catch (e) {
-                setLoading(false);
-                showToast('❌ 圖片處理失敗', true);
-            }
-        }
-
-        async function submitData() {
-            const data = {
-                date: document.getElementById('input-date').value,
-                startTime: document.getElementById('input-startTime').value,
-                endTime: document.getElementById('input-endTime').value,
-                reason: document.getElementById('input-reason').value,
-                name: state.name,
-                action: 'submit'
-            };
-
-            if (!data.reason) return showToast('⚠️ 請填寫內容', true);
-            if (!data.name) return showToast('⚠️ 請先設定姓名', true);
-
-            setLoading(true);
-            google.script.run
-                .withSuccessHandler((res) => {
-                    setLoading(false);
-                    if (res.result === 'success') {
-                        showToast('✨ 登記成功！');
-                        document.getElementById('input-reason').value = '';
-                    } else {
-                        showToast('❌ ' + (res.error || '登記失敗'), true);
-                    }
-                })
-                .withFailureHandler((err) => {
-                    setLoading(false);
-                    showToast('❌ 網路通訊錯誤', true);
-                })
-                .handleFormSubmit(data);
         }
 
         function setLoading(val) {
@@ -477,34 +490,37 @@
             setTimeout(() => t.classList.add('hidden'), 3000);
         }
 
-        /* 背景動畫 (保持不變) */
+        // 背景動畫 (與主題連動)
         function initBackground() {
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');
             let dots = [];
-            function resize() {
+            
+            const resize = () => {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
                 dots = [];
-                const gap = 30;
-                for(let x=0; x<canvas.width+gap; x+=gap) {
-                    for(let y=0; y<canvas.height+gap; y+=gap) {
+                for(let x=0; x<canvas.width+30; x+=30) {
+                    for(let y=0; y<canvas.height+30; y+=30) {
                         dots.push({ x, y, phase: Math.random() * Math.PI * 2 });
                     }
                 }
-            }
-            function animate(time) {
+            };
+
+            const animate = (time) => {
                 ctx.clearRect(0,0, canvas.width, canvas.height);
-                ctx.fillStyle = (state.theme === 'poryphone') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+                ctx.fillStyle = state.theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
                 dots.forEach(d => {
                     const mod = Math.sin(time/1000 + d.phase);
-                    if (mod > 0.8) {
-                        ctx.globalAlpha = (mod - 0.8) * 5;
-                        ctx.beginPath(); ctx.arc(d.x, d.y, 1.5, 0, Math.PI*2); ctx.fill();
+                    if (mod > 0.9) {
+                        ctx.beginPath();
+                        ctx.arc(d.x, d.y, 1.2, 0, Math.PI*2);
+                        ctx.fill();
                     }
                 });
                 requestAnimationFrame(animate);
-            }
+            };
+
             window.onresize = resize;
             resize();
             animate(0);
