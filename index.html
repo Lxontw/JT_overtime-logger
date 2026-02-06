@@ -1,333 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="poryphone">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>無盡火域：神魄登記</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
-/* =========================================
-   核心主題變數系統
-   ========================================= */
-:root {
-    --base-font-size: 18px;
-    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    --grid-gap: 24px;
-    --input-gap: 12px;
-    --global-radius: 16px;
-    --global-btn-clip: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
-    --warning-red: #ef4444;
-}
+    <style>
+        /* =========================================
+           1. 核心主題變數系統 (新版)
+           ========================================= */
+        :root {
+            --base-font-size: 18px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --grid-gap: 20px;
+            --input-gap: 12px;
+            --global-radius: 16px;
+            /* 保留原本的 Button Clip，因為新版的 Clip 可能會切掉文字 */
+            --global-btn-clip: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            --warning-red: #ef4444;
+        }
 
-/* 1. Poryphone Theme */
-[data-theme="poryphone"] {
-    --bg: linear-gradient(180deg, #57d5e5 0%, #1a8a99 100%);
-    --text: #ffffff;
-    --input-bg: rgba(255, 255, 255, 0.15);
-    --input-border: rgba(255, 255, 255, 0.2);
-    --accent: #2bc0d1;
-    --btn-primary: linear-gradient(135deg, #4edeea, #26a9b8);
-    --btn-shadow: rgba(0, 0, 0, 0.2);
-}
+        /* Poryphone Theme */
+        [data-theme="poryphone"] {
+            --bg: linear-gradient(180deg, #57d5e5 0%, #1a8a99 100%);
+            --text: #ffffff;
+            --input-bg: rgba(255, 255, 255, 0.15);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --accent: #2bc0d1;
+            --btn-primary: linear-gradient(135deg, #4edeea, #26a9b8);
+            --btn-shadow: rgba(0, 0, 0, 0.2);
+            --toast-bg: #ffffff;
+            --toast-text: #1a6b7d;
+        }
 
-/* 2. Light Theme */
-[data-theme="light"] {
-    --bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    --text: #1e293b;
-    --input-bg: #ffffff;
-    --input-border: #cbd5e1;
-    --accent: #6366f1;
-    --btn-primary: linear-gradient(135deg, #6366f1, #4f46e5);
-    --btn-shadow: rgba(79, 70, 229, 0.2);
-}
+        /* Light Theme */
+        [data-theme="light"] {
+            --bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --text: #1e293b;
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --accent: #6366f1;
+            --btn-primary: linear-gradient(135deg, #6366f1, #4f46e5);
+            --btn-shadow: rgba(79, 70, 229, 0.2);
+            --toast-bg: #ffffff;
+            --toast-text: #333;
+        }
 
-/* 3. Dark Theme */
-[data-theme="dark"] {
-    --bg: linear-gradient(180deg, #0f172a 0%, #020617 100%);
-    --text: #ffffff;
-    --input-bg: rgba(30, 41, 59, 0.8);
-    --input-border: rgba(255, 255, 255, 0.1);
-    --accent: #f59e0b;
-    --btn-primary: linear-gradient(135deg, #f59e0b, #d97706);
-    --btn-shadow: rgba(0, 0, 0, 0.4);
-}
+        /* Dark Theme */
+        [data-theme="dark"] {
+            --bg: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+            --text: #ffffff;
+            --input-bg: rgba(30, 41, 59, 0.8);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --accent: #f59e0b;
+            --btn-primary: linear-gradient(135deg, #f59e0b, #d97706);
+            --btn-shadow: rgba(0, 0, 0, 0.4);
+            --toast-bg: #1f2937;
+            --toast-text: #fff;
+        }
 
-html { font-size: var(--base-font-size); }
-* { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: var(--base-font-size); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-    font-family: 'Inter', 'PingFang TC', sans-serif;
-    background: var(--bg);
-    background-attachment: fixed;
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-}
+        body {
+            font-family: 'Inter', 'PingFang TC', sans-serif;
+            background: var(--bg);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex; /* 確保 game-wrapper 置中 */
+            justify-content: center;
+        }
 
-.game-wrapper {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center; 
-    padding: 40px 20px;
-}
+        /* 增加紋理覆蓋 (保留自舊版) */
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.03) 0px, rgba(0, 0, 0, 0.03) 1px, transparent 1px, transparent 2px);
+            pointer-events: none; z-index: 0;
+        }
 
-.main-container {
-    width: 100%;
-    max-width: 480px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: var(--grid-gap);
-}
+        .game-wrapper {
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center; 
+            padding: 40px 20px;
+            z-index: 10;
+        }
 
-/* =========================================
-   Header 穩定佈局修正
-   ========================================= */
-.game-header {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-}
+        .main-container {
+            width: 100%;
+            max-width: 480px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: var(--grid-gap);
+        }
 
-.header-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    flex-wrap: nowrap;
-}
+        /* Header */
+        .game-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
 
-.mini-scaler-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--input-bg);
-    border: 2.5px solid var(--text);
-    padding: 6px 12px;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: var(--transition);
-    color: var(--text);
-    font-weight: 800;
-    flex-shrink: 0;
-}
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
 
-.actions-right-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-}
+        .brand-title {
+            font-size: 1.8rem;
+            font-weight: 950;
+            color: var(--text);
+            letter-spacing: -1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
 
-.skin-group { 
-    display: flex; 
-    gap: 6px; 
-    flex-shrink: 0;
-}
+        /* Skin Dots */
+        .skin-group { display: flex; gap: 8px; }
+        .skin-dot {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2.5px solid var(--text);
+            background: transparent;
+            color: var(--text);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-weight: 900;
+            transition: var(--transition);
+            font-size: 0.8rem;
+        }
+        .skin-dot.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
 
-.toggle-btn-container {
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
+        /* Panels & Sections */
+        .floating-panel {
+            display: flex;
+            flex-direction: column;
+            gap: var(--input-gap);
+            width: 100%;
+        }
 
-.skin-dot, .gear-btn, .close-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 2.5px solid var(--text);
-    background: transparent;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-weight: 900;
-    transition: var(--transition);
-    flex-shrink: 0;
-}
+        .section-tag {
+            font-size: 0.9rem;
+            font-weight: 950;
+            color: var(--text);
+            border-left: 5px solid var(--accent);
+            padding-left: 10px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
 
-.skin-dot.active {
-    background: var(--accent);
-    color: #fff;
-    border-color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
+        /* Inputs */
+        input, select, textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--input-border);
+            border-radius: var(--global-radius);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.25);
+        }
 
-/* 強制紅色關閉按鈕 */
-.close-btn {
-    background-color: var(--warning-red) !important;
-    color: #ffffff !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
-}
+        /* Mode Buttons */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .mode-btn {
+            padding: 14px 2px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            border-radius: 12px;
+            border: 2px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+        .mode-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
 
-.brand-title {
-    font-size: 1.8rem;
-    font-weight: 950;
-    color: var(--text);
-    letter-spacing: -1px;
-}
+        /* Layout Grid */
+        .grid-row-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
 
-/* =========================================
-   面板與照相機
-   ========================================= */
-.floating-panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--input-gap);
-}
+        /* Main Actions */
+        .btn-action {
+            width: 100%;
+            padding: 22px;
+            background: var(--btn-primary);
+            color: #fff;
+            border: none;
+            font-size: 1.25rem;
+            font-weight: 950;
+            clip-path: var(--global-btn-clip);
+            cursor: pointer;
+            box-shadow: 0 8px 0 var(--btn-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 10px;
+            transition: var(--transition);
+        }
+        .btn-action:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 var(--btn-shadow);
+        }
 
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
+        /* OCR & Config Buttons */
+        .btn-ocr {
+            background: rgba(0,0,0,0.2);
+            color: var(--text);
+            border: 2px solid var(--input-border);
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-ocr:hover { background: rgba(0,0,0,0.3); }
 
-.section-tag {
-    font-size: 1rem;
-    font-weight: 950;
-    color: var(--text);
-    border-left: 6px solid var(--accent);
-    padding-left: 12px;
-    white-space: nowrap;
-}
+        /* Time Inputs Specifics */
+        input[type="time"] {
+            font-family: 'Consolas', monospace;
+            font-size: 1.4rem;
+            text-align: center;
+            letter-spacing: 2px;
+        }
 
-.ocr-mini-btn {
-    width: 44px;
-    height: 44px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    flex-shrink: 0;
-    transition: var(--transition);
-}
+        /* Utilities */
+        .dimmed { opacity: 0.5; filter: grayscale(0.5); pointer-events: none; }
+        .hidden { display: none !important; }
 
-.ocr-mini-btn:active {
-    transform: scale(0.95);
-}
+        /* Toast */
+        .status-toast {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--toast-bg); color: var(--toast-text);
+            padding: 25px 40px; border-radius: 30px; font-weight: 900;
+            z-index: 5000; border: 4px solid var(--accent);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            opacity: 0; pointer-events: none; transition: var(--transition);
+            text-align: center; width: 80%; max-width: 350px;
+        }
+        .status-toast.show { opacity: 1; pointer-events: auto; }
 
-/* =========================================
-   輸入組件
-   ========================================= */
-.mode-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-}
+        /* Config Overlay */
+        .config-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px); z-index: 2000;
+            padding: 20px; overflow-y: auto;
+            display: flex; justify-content: center; align-items: flex-start;
+        }
+        .close-x {
+            position: fixed; top: 20px; right: 20px;
+            width: 44px; height: 44px; background: var(--warning-red);
+            color: #fff; border-radius: 50%; border: 3px solid #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; cursor: pointer; z-index: 2100;
+            box-shadow: 0 4px 12px rgba(239,68,68,0.4);
+        }
 
-.mode-btn {
-    padding: 14px 2px;
-    font-size: 0.85rem;
-    font-weight: 800;
-    border-radius: 12px;
-    border: 2.5px solid var(--input-border);
-    background: var(--input-bg);
-    color: var(--text);
-    cursor: pointer;
-    transition: var(--transition);
-}
+        /* =========================================
+           [絕殺修正] iPhone Mobile 隔離層 (<= 600px)
+           保留原本邏輯，確保小螢幕不跑版
+           ========================================= */
+        @media (max-width: 600px) {
+            .game-wrapper { padding: 10px 10px; align-items: flex-start; }
+            .main-container { width: 100%; max-width: none; gap: 15px; }
+            .grid-row-container { display: flex; flex-direction: column; gap: 15px; }
+            .floating-panel, #startPanel, #endPanel { width: 100%; }
+            .brand-title { font-size: 1.5rem; }
+            .btn-action { padding: 18px; font-size: 1.1rem; }
+            
+            /* 強制修正輸入框在手機上的體驗 */
+            input, select { font-size: 16px; /* 防止 iOS 縮放 */ }
+        }
+    </style>
+</head>
+<body>
 
-.mode-btn.active {
-    background: var(--accent);
-    color: #fff;
-    border-color: #fff;
-}
+<div id="statusToast" class="status-toast"></div>
 
-input, select, textarea {
-    width: 100%;
-    padding: 15px;
-    border: 2.5px solid var(--input-border);
-    border-radius: var(--global-radius);
-    background: var(--input-bg);
-    color: var(--text);
-    font-size: 1rem;
-    font-weight: 600;
-    outline: none;
-    transition: var(--transition);
-}
+<div class="game-wrapper">
+    <div class="main-container">
+        <header class="game-header">
+            <div class="header-actions">
+                <div class="brand-title">無盡火域</div>
+                <div class="skin-group">
+                    <div class="skin-dot active" id="s-poryphone" onclick="setTheme('poryphone')">P</div>
+                    <div class="skin-dot" id="s-light" onclick="setTheme('light')">L</div>
+                    <div class="skin-dot" id="s-dark" onclick="setTheme('dark')">D</div>
+                </div>
+            </div>
+            <div style="font-size: 0.8rem; opacity: 0.7; font-weight: 700; text-align: right;">SYSTEM V3.0</div>
+        </header>
 
-.grid-row-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
+        <div class="floating-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="section-tag">介面縮放</span>
+                <span id="fsVal" style="font-weight:800; color:var(--accent);">18px</span>
+            </div>
+            <input type="range" id="fsSlider" min="14" max="22" value="18" oninput="updateFontSize(this.value)" style="padding: 0; height: 6px; border: none;">
+        </div>
 
-/* =========================================
-   按鈕
-   ========================================= */
-.btn-action {
-    width: 100%;
-    padding: 22px;
-    background: var(--btn-primary);
-    color: #fff;
-    border: none;
-    font-size: 1.25rem;
-    font-weight: 950;
-    clip-path: var(--global-btn-clip);
-    cursor: pointer;
-    box-shadow: 0 8px 0 var(--btn-shadow);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    transition: 0.2s;
-}
+        <div class="floating-panel">
+            <div class="section-tag">日期選擇</div>
+            <input type="date" id="dateIn" required>
+        </div>
 
-.btn-action:active {
-    transform: translateY(4px);
-    box-shadow: 0 4px 0 var(--btn-shadow);
-}
+        <div class="floating-panel">
+            <div class="section-tag">下班模式</div>
+            <div class="mode-grid">
+                <div class="mode-btn active" id="m-regular" onclick="setMode('regular')">常規下班</div>
+                <div class="mode-btn" id="m-overtime" onclick="setMode('overtime')">特定加班</div>
+                <div class="mode-btn" id="m-special" onclick="setMode('special')">特殊時段</div>
+            </div>
+        </div>
 
-.btn-action.danger {
-    background: var(--warning-red) !important;
-    box-shadow: 0 8px 0 rgba(185, 28, 28, 0.4) !important;
-    margin-top: 10px;
-}
+        <div class="grid-row-container">
+            <div class="floating-panel" id="startPanel">
+                <div class="section-tag">開始時間</div>
+                <input type="time" id="startTime" oninput="wakeUp('startTime')">
+            </div>
+            <div class="floating-panel" id="endPanel">
+                <div class="section-tag">結束時間</div>
+                <input type="time" id="endTime" required oninput="wakeUp('endTime')">
+            </div>
+        </div>
 
-/* =========================================
-   RWD
-   ========================================= */
-@media (max-width: 480px) {
-    .game-wrapper {
-        align-items: flex-start;
-        padding: 24px 16px;
+        <div class="floating-panel">
+            <div class="section-tag">活動紀錄 / OCR</div>
+            <div id="reasonQuickWrapper" class="dimmed">
+                <select id="reasonQuick" onchange="handleQuickReasonChange()"></select>
+            </div>
+            <textarea id="reasonMain" rows="3" placeholder="輸入加班內容..."></textarea>
+            
+            <button class="btn-ocr" onclick="document.getElementById('ocrInput').click()">
+                <span>📷</span> 啟動智慧文字辨識
+            </button>
+            <input type="file" id="ocrInput" accept="image/*" class="hidden" onchange="openCrop(this)">
+        </div>
+
+        <button class="btn-action" onclick="handleSubmit()">
+            確認上傳系統
+        </button>
+
+        <div style="display: flex; justify-content: center; margin-top: 10px;">
+            <button onclick="showConfig()" style="background: transparent; border: none; color: var(--text); font-weight: 800; cursor: pointer; opacity: 0.6; padding: 10px;">
+                ⚙️ 進階設定
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="configOverlay" class="config-overlay hidden">
+    <div class="close-x" onclick="hideConfig()">✕</div>
+    
+    <div class="main-container" style="margin-top: 40px;">
+        <h2 style="color: var(--text); margin-bottom: 20px; font-weight: 900; font-size: 2rem;">系統設定</h2>
+        
+        <div class="floating-panel">
+            <div class="section-tag">基本資料</div>
+            <input type="text" id="cfgName" placeholder="使用者姓名">
+            <input type="text" id="cfgUrl" placeholder="GAS API URL">
+        </div>
+
+        <div class="floating-panel">
+            <div class="section-tag">常用事由 (逗號分隔)</div>
+            <textarea id="cfgReasons" rows="6"></textarea>
+        </div>
+
+        <button class="btn-action" onclick="saveConfig()">儲存設定</button>
+
+        <div class="floating-panel" style="margin-top: 20px;">
+            <div class="section-tag" style="color: var(--warning-red);">危險區域</div>
+            <button class="btn-action danger" style="background: var(--warning-red) !important; box-shadow: 0 8px 0 #b91c1c !important;" onclick="confirmReset()">
+                ⚠️ 重設雲端範本
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="cropModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:6000; display:flex; flex-direction:column;">
+    <div style="flex:1; position:relative; overflow:hidden;">
+        <img id="cropImg" style="max-width:100%;">
+    </div>
+    <div style="padding: 20px; background:var(--input-bg); display:flex; gap:15px; backdrop-filter: blur(10px);">
+        <button class="btn-action" style="background:#64748b; margin:0;" onclick="closeCrop()">取消</button>
+        <button class="btn-action" id="ocrGo" style="margin:0;" onclick="doOCR()">辨識</button>
+    </div>
+</div>
+
+<script>
+    /* =========================================
+       邏輯核心 (保留原始功能，適配新 Class)
+       ========================================= */
+    const state = { cropper: null, mode: 'regular' };
+    const el = {
+        toast: document.getElementById('statusToast'),
+        fsSlider: document.getElementById('fsSlider'),
+        fsVal: document.getElementById('fsVal'),
+        date: document.getElementById('dateIn'),
+        start: document.getElementById('startTime'),
+        end: document.getElementById('endTime'),
+        startPanel: document.getElementById('startPanel'), // Use panel for dimming style
+        endPanel: document.getElementById('endPanel'),
+        reason: document.getElementById('reasonMain'),
+        reasonQuick: document.getElementById('reasonQuick'),
+        reasonQuickWrapper: document.getElementById('reasonQuickWrapper'),
+        cfgOverlay: document.getElementById('configOverlay'),
+        cfgName: document.getElementById('cfgName'),
+        cfgUrl: document.getElementById('cfgUrl'),
+        cfgReasons: document.getElementById('cfgReasons'),
+        cropModal: document.getElementById('cropModal'),
+        cropImg: document.getElementById('cropImg'),
+        ocrGo: document.getElementById('ocrGo')
+    };
+
+    window.onload = () => {
+        const url = localStorage.getItem('gas_url');
+        const theme = localStorage.getItem('theme') || 'poryphone';
+        const fontSize = localStorage.getItem('base_font_size') || '18';
+        const reasons = localStorage.getItem('custom_reasons') || "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件";
+        
+        setTheme(theme);
+        updateFontSize(fontSize);
+        el.fsSlider.value = fontSize;
+        el.cfgName.value = localStorage.getItem('user_name') || '';
+        el.cfgUrl.value = url || '';
+        el.cfgReasons.value = reasons;
+        
+        renderReasons(reasons);
+        
+        const now = new Date();
+        el.date.valueAsDate = now;
+        // Auto set end time
+        el.end.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        el.end.classList.add('dimmed');
+        
+        if (!url) showConfig();
+        setMode('regular');
+    };
+
+    window.setTheme = (t) => {
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('theme', t);
+        document.querySelectorAll('.skin-dot').forEach(d => {
+            d.classList.toggle('active', d.id === 's-' + t);
+        });
+    };
+
+    window.updateFontSize = (v) => {
+        document.documentElement.style.setProperty('--base-font-size', v + 'px');
+        el.fsVal.textContent = v + 'px';
+        localStorage.setItem('base_font_size', v);
+    };
+
+    window.setMode = (m) => {
+        state.mode = m;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.id === 'm-' + m));
+        
+        const stdOff = localStorage.getItem('std_off') || '17:30';
+        const stdStart = localStorage.getItem('std_start') || '08:30';
+
+        if (m === 'regular') {
+            el.start.classList.add('dimmed');
+            el.start.value = stdOff;
+        } else {
+            el.start.classList.remove('dimmed');
+            el.start.value = (m === 'overtime') ? stdOff : stdStart;
+        }
+    };
+
+    window.wakeUp = (id) => {
+        // Handle input ID or group ID
+        const target = document.getElementById(id);
+        if(target) target.classList.remove('dimmed');
+    };
+
+    window.handleQuickReasonChange = () => {
+        if(el.reasonQuick.value) {
+            el.reason.value = el.reasonQuick.value;
+            el.reasonQuickWrapper.classList.remove('dimmed');
+        }
+    };
+
+    window.renderReasons = (str) => {
+        el.reasonQuick.innerHTML = '<option value="" disabled selected>-- 快速選擇 --</option>';
+        str.split(/[,，\n]+/).map(s => s.trim()).filter(s => s).forEach(r => {
+            const o = document.createElement('option'); o.value = o.textContent = r;
+            el.reasonQuick.appendChild(o);
+        });
+    };
+
+    window.showConfig = () => el.cfgOverlay.classList.remove('hidden');
+    window.hideConfig = () => el.cfgOverlay.classList.add('hidden');
+
+    window.saveConfig = () => {
+        localStorage.setItem('gas_url', el.cfgUrl.value.trim());
+        localStorage.setItem('user_name', el.cfgName.value.trim());
+        localStorage.setItem('custom_reasons', el.cfgReasons.value);
+        renderReasons(el.cfgReasons.value);
+        toast('✅ 設定已儲存');
+        setTimeout(hideConfig, 800);
+    };
+
+    // Google Sheets Reset Logic
+    window.confirmReset = () => {
+        if(!localStorage.getItem('gas_url')) return alert('請先設定 API');
+        if(confirm('⚠️ 嚴重警告 ⚠️\n\n確定要重設雲端範本嗎？\n這將會覆蓋工作表定義。')) {
+            executeReset();
+        }
+    };
+
+    window.executeReset = () => {
+        const url = localStorage.getItem('gas_url');
+        toast('⏳ 重設請求中...');
+        const fd = new FormData(); fd.append('action', 'reset_template');
+        fetch(url, { method: 'POST', body: fd })
+            .then(r => r.json()).then(d => {
+                if(d.result === 'success' || d.status === 'success') {
+                    toast('✅ 重設成功');
+                } else {
+                    toast('❌ 失敗: ' + (d.error || '未知'));
+                }
+            }).catch(() => toast('❌ 連線異常'));
+    };
+
+    window.handleSubmit = () => {
+        const url = localStorage.getItem('gas_url');
+        if(!url) return toast('⚠️ 請設定 API');
+        if(!el.reason.value) return toast('⚠️ 請填寫內容');
+        
+        toast('📡 資料上傳中...');
+        const fd = new FormData();
+        fd.append('action', 'submit');
+        fd.append('date', el.date.value);
+        fd.append('name', localStorage.getItem('user_name') || '未命名');
+        // If regular mode and dimmed, send empty or standard logic, but here we send value if exists
+        fd.append('startTime', el.start.value);
+        fd.append('endTime', el.end.value);
+        fd.append('reason', el.reason.value);
+
+        fetch(url, { method: 'POST', body: fd })
+            .then(r => r.json()).then(d => {
+                if(d.result === 'success' || d.status === 'success') {
+                    toast('✨ 登記成功！');
+                    el.reason.value = '';
+                    el.end.classList.add('dimmed');
+                } else toast('❌ 登記失敗');
+            }).catch(() => toast('❌ 網路錯誤'));
+    };
+
+    function toast(txt) {
+        el.toast.innerHTML = txt;
+        el.toast.classList.add('show');
+        setTimeout(() => el.toast.classList.remove('show'), 2500);
     }
-    .main-container { gap: 20px; }
-    .brand-title { font-size: 1.5rem; }
-}
 
-/* 其他通知 */
-.status-toast {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #ffffff;
-    color: #333;
-    padding: 20px 40px;
-    border-radius: 50px;
-    font-weight: 900;
-    z-index: 5000;
-    border: 5px solid var(--accent);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-}
-.status-toast.error { border-color: var(--warning-red); }
+    // OCR Logic
+    window.openCrop = (input) => {
+        if(!input.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            el.cropImg.src = e.target.result;
+            el.cropModal.classList.remove('hidden');
+            if(state.cropper) state.cropper.destroy();
+            state.cropper = new Cropper(el.cropImg, { viewMode: 1, autoCropArea: 0.8 });
+        };
+        reader.readAsDataURL(input.files[0]);
+    };
 
-.loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    backdrop-filter: blur(4px);
-}
+    window.closeCrop = () => { 
+        el.cropModal.classList.add('hidden'); 
+        if(state.cropper) state.cropper.destroy(); 
+        document.getElementById('ocrInput').value = ''; // clear input
+    };
+
+    window.doOCR = () => {
+        const url = localStorage.getItem('gas_url');
+        if(!url) return alert('請先設定 API');
+        
+        el.ocrGo.textContent = '讀取中...';
+        const b64 = state.cropper.getCroppedCanvas({maxWidth: 800}).toDataURL('image/jpeg', 0.7).split(',')[1];
+        
+        const fd = new FormData(); fd.append('action', 'ocr'); fd.append('image', b64);
+        
+        fetch(url, { method: 'POST', body: fd })
+            .then(r => r.json()).then(d => {
+                const res = d.text || (d.data ? d.data.text : "");
+                if(res) { 
+                    el.reason.value = res; 
+                    toast('✨ 辨識成功'); 
+                } else {
+                    toast('❌ 無法辨識');
+                }
+            })
+            .catch(() => toast('❌ OCR 連線失敗'))
+            .finally(() => { 
+                el.ocrGo.textContent = '辨識'; 
+                closeCrop(); 
+            });
+    };
+</script>
+</body>
+</html>
