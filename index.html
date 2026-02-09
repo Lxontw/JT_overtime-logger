@@ -11,7 +11,7 @@
     
     <style>
         /* =========================================
-           系統配置與主題變數 (保留完美版視覺)
+           系統配置與主題變數
            ========================================= */
         :root {
             --base-font-size: 18px;
@@ -72,38 +72,16 @@
             transition: var(--transition);
         }
 
-        input[type="time"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-inner-spin-button,
-        input[type="time"]::-webkit-clear-button {
-            display: none !important;
-            -webkit-appearance: none;
-        }
+        input[type="time"]::-webkit-calendar-picker-indicator { display: none !important; }
 
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
+        .input-wrapper { position: relative; width: 100%; }
         .input-icon-overlay {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            opacity: 0.8;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-        }
-
-        input[type="time"] {
-            padding-right: 2.8rem !important;
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            pointer-events: none; opacity: 0.8; display: flex; align-items: center;
         }
 
         [data-theme="poryphone"] .brand-title,
-        [data-theme="poryphone"] .section-tag {
-            text-shadow: 0 0 15px rgba(0, 242, 255, 0.6);
-        }
+        [data-theme="poryphone"] .section-tag { text-shadow: 0 0 15px rgba(0, 242, 255, 0.6); }
 
         .btn-action {
             clip-path: var(--global-btn-clip);
@@ -112,10 +90,7 @@
             transition: 0.2s;
             color: white;
         }
-        .btn-action:active {
-            transform: translateY(4px);
-            box-shadow: 0 4px 0 var(--btn-shadow);
-        }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 4px 0 var(--btn-shadow); }
         .btn-danger {
             background: var(--warning-red) !important;
             box-shadow: 0 8px 0 rgba(185, 28, 28, 0.4) !important;
@@ -129,18 +104,11 @@
             outline: none;
         }
 
-        ::placeholder {
-            color: var(--placeholder-color) !important;
-            opacity: 1 !important;
-            font-weight: 700;
-        }
-
         .mode-btn {
             background: var(--input-bg);
             border: 2.5px solid var(--input-border);
             transition: var(--transition);
             font-weight: 800;
-            color: var(--text);
         }
         .mode-btn.active {
             background: var(--mode-active-bg) !important;
@@ -152,38 +120,9 @@
         }
 
         .font-scaler-btn, .skin-dot, .gear-btn, .close-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 2.5px solid var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            cursor: pointer;
-            background: transparent;
-            flex-shrink: 0;
-            font-weight: 900;
-            color: var(--text);
-        }
-
-        .font-scaler-btn:active, .skin-dot:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        [data-theme="poryphone"] #theme-p.active {
-            background: #00f2ff !important;
-            border-color: #ffffff !important;
-            color: #1a8a99 !important;
-            box-shadow: 0 0 20px #00f2ff, 0 0 40px rgba(0, 242, 255, 0.5), inset 0 0 8px rgba(255,255,255,0.8);
-            transform: translateY(-3px) scale(1.1);
-        }
-        
-        .skin-dot.active {
-            background: var(--accent);
-            border-color: white;
-            transform: translateY(-2px);
-            color: white;
+            width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--text);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: var(--transition); font-weight: 900;
         }
 
         .close-btn {
@@ -193,99 +132,61 @@
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
         }
 
-        .header-controls {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
-            min-height: 44px;
-        }
-
-        /* 鎖定切換區寬度防止抖動 */
-        #header-toggle-area {
-            width: 44px;
-            height: 44px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #theme-selector {
-            display: flex;
-            gap: 8px; 
-            transition: var(--transition);
-        }
-
-        .section-tag {
-            border-left: 6px solid var(--accent);
-            padding-left: 12px;
-            font-weight: 900;
-        }
-
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            pointer-events: none;
-        }
+        .section-tag { border-left: 6px solid var(--accent); padding-left: 12px; font-weight: 900; }
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
 
         /* 裁切介面樣式 */
         #cropper-modal {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
+            position: fixed; inset: 0; background: #000; z-index: 1000;
+            display: none; flex-direction: column;
         }
-
         #cropper-container {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            touch-action: none;
+            flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
-
-        #cropper-image {
-            max-width: 100%;
-            max-height: 100%;
-            user-select: none;
-            -webkit-user-drag: none;
-        }
-
-        #crop-box {
-            position: absolute;
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
-            cursor: move;
-            display: none;
-        }
-
-        .crop-handle {
-            position: absolute;
-            width: 15px;
-            height: 15px;
-            background: #fff;
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-        }
+        #cropper-image { max-width: 100%; max-height: 100%; user-select: none; }
+        #crop-box { position: absolute; border: 2px solid var(--accent); box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); cursor: move; display: none; }
+        .crop-handle { position: absolute; width: 15px; height: 15px; background: #fff; border: 2px solid var(--accent); border-radius: 50%; }
         .handle-nw { top: -8px; left: -8px; cursor: nw-resize; }
         .handle-ne { top: -8px; right: -8px; cursor: ne-resize; }
         .handle-sw { bottom: -8px; left: -8px; cursor: sw-resize; }
         .handle-se { bottom: -8px; right: -8px; cursor: se-resize; }
+        .cropper-actions { background: rgba(0,0,0,0.8); padding: 20px; display: flex; gap: 12px; justify-content: center; }
 
-        .cropper-actions {
-            background: rgba(0,0,0,0.8);
-            padding: 20px;
-            display: flex;
-            gap: 12px;
-            justify-content: center;
+        /* =========================================
+           新版專業對話框 (Modal Dialog)
+           ========================================= */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 5000;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease-out;
         }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal-card {
+            background: #ffffff; width: 100%; max-width: 400px; border-radius: 32px;
+            padding: 32px; text-align: center; color: #1e293b;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-card { transform: scale(1); }
+
+        .result-icon-circle {
+            width: 80px; height: 80px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; margin: 0 auto 24px;
+        }
+        .icon-success { background: #ecfdf5; color: #10b981; }
+        .icon-error { background: #fef2f2; color: #ef4444; }
+
+        .modal-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; color: #0f172a; }
+        .modal-desc { font-size: 1rem; color: #64748b; line-height: 1.6; margin-bottom: 24px; }
+        .modal-btn {
+            width: 100%; padding: 16px; border-radius: 16px; font-weight: 800;
+            background: #0f172a; color: #fff; transition: transform 0.2s;
+        }
+        .modal-btn:active { transform: scale(0.95); }
 
         .hidden { display: none !important; }
     </style>
@@ -309,14 +210,14 @@
                     <span class="text-xl serif leading-none">Aa</span>
                 </button>
 
-                <div class="header-controls">
-                    <div id="theme-selector">
+                <div class="flex items-center gap-3">
+                    <div id="theme-selector" class="flex gap-2">
                         <button onclick="setTheme('poryphone')" class="skin-dot" id="theme-p">P</button>
                         <button onclick="setTheme('light')" class="skin-dot" id="theme-l">L</button>
                         <button onclick="setTheme('dark')" class="skin-dot" id="theme-d">D</button>
                     </div>
 
-                    <div id="header-toggle-area">
+                    <div id="header-toggle-area" class="relative w-11 h-11">
                         <button id="btn-to-settings" onclick="showTab('settings')" class="gear-btn absolute inset-0">
                             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                         </button>
@@ -433,18 +334,30 @@
         </div>
     </div>
 
-    <!-- 全局通知與載入 -->
-    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <svg class="animate-spin text-white" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+    <!-- 專業結果對話框 (Result Modal) -->
+    <div id="resultModal" class="modal-overlay" onclick="closeResultModal()">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div id="result-icon-container" class="result-icon-circle">
+                <!-- SVG 會由 JS 動態插入 -->
+            </div>
+            <h3 id="result-title" class="modal-title">標題內容</h3>
+            <p id="result-desc" class="modal-desc">詳細描述文字...</p>
+            <button onclick="closeResultModal()" class="modal-btn">
+                確認
+            </button>
+        </div>
     </div>
 
-    <div id="toast" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-slate-800 px-10 py-5 rounded-full font-black shadow-2xl border-4 border-indigo-500 z-[100] hidden">通知內容</div>
+    <!-- 載入中 -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[6000] hidden">
+        <svg class="animate-spin text-white" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+    </div>
 
     <script>
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.3.1 [修正 UI 抖動與 SVG 錯誤]',
+            VERSION: 'V2.3.5 [專業彈出對話框]',
             FONT_STEPS: [14, 18, 22]
         };
 
@@ -485,9 +398,7 @@
                         try {
                             const res = await fetch(state.apiUrl, { method: 'POST', body: formData });
                             return await res.json();
-                        } catch (e) {
-                            console.error("Fetch failed", e);
-                        }
+                        } catch (e) { console.error("Fetch failed", e); }
                     }
                     await new Promise(r => setTimeout(r, 1000));
                     if (action === 'ocr') return { result: 'success', text: '裁切範圍辨識成功 (模擬內容)' };
@@ -497,65 +408,65 @@
         };
 
         /* ============================================================
+           [ 專業彈出對話框邏輯 ]
+           ============================================================ */
+        function showResultModal(type, title, desc) {
+            const modal = document.getElementById('resultModal');
+            const iconContainer = document.getElementById('result-icon-container');
+            const titleEl = document.getElementById('result-title');
+            const descEl = document.getElementById('result-desc');
+            
+            titleEl.innerText = title;
+            descEl.innerText = desc;
+            iconContainer.className = 'result-icon-circle ' + (type === 'success' ? 'icon-success' : 'icon-error');
+            
+            const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            const errorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>`;
+            
+            iconContainer.innerHTML = (type === 'success' ? successSvg : errorSvg);
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeResultModal() {
+            document.getElementById('resultModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        /* ============================================================
            [ 裁切邏輯 ]
            ============================================================ */
-        let cropperData = {
-            img: null,
-            box: { x: 50, y: 50, w: 200, h: 100 },
-            isDragging: false,
-            isResizing: false,
-            resizeDir: '',
-            startX: 0,
-            startY: 0
-        };
-
+        let cropperData = { img: null, box: { x: 50, y: 50, w: 200, h: 100 }, isDragging: false, isResizing: false, resizeDir: '', startX: 0, startY: 0 };
         function openCropper(base64) {
             const modal = document.getElementById('cropper-modal');
             const img = document.getElementById('cropper-image');
             img.src = base64;
             img.onload = () => {
                 modal.style.display = 'flex';
-                const box = document.getElementById('crop-box');
-                box.style.display = 'block';
-                cropperData.box = {
-                    x: (img.clientWidth - 200) / 2,
-                    y: (img.clientHeight - 100) / 2,
-                    w: 200,
-                    h: 100
-                };
+                document.getElementById('crop-box').style.display = 'block';
+                cropperData.box = { x: (img.clientWidth - 200) / 2, y: (img.clientHeight - 100) / 2, w: 200, h: 100 };
                 updateCropBoxUI();
             };
         }
-
-        function closeCropper() {
-            document.getElementById('cropper-modal').style.display = 'none';
-        }
-
+        function closeCropper() { document.getElementById('cropper-modal').style.display = 'none'; }
         function updateCropBoxUI() {
-            const boxEl = document.getElementById('crop-box');
-            boxEl.style.left = cropperData.box.x + 'px';
-            boxEl.style.top = cropperData.box.y + 'px';
-            boxEl.style.width = cropperData.box.w + 'px';
-            boxEl.style.height = cropperData.box.h + 'px';
+            const b = cropperData.box;
+            const el = document.getElementById('crop-box');
+            el.style.left = b.x + 'px'; el.style.top = b.y + 'px';
+            el.style.width = b.w + 'px'; el.style.height = b.h + 'px';
         }
 
         const cropperContainer = document.getElementById('cropper-container');
-        const cropBox = document.getElementById('crop-box');
-
         cropperContainer.onmousedown = cropperContainer.ontouchstart = (e) => {
             const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
             const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            
             if (e.target.classList.contains('crop-handle')) {
                 cropperData.isResizing = true;
                 cropperData.resizeDir = e.target.className.split('handle-')[1];
-            } else if (e.target === cropBox) {
+            } else if (e.target.id === 'crop-box') {
                 cropperData.isDragging = true;
-            } else {
-                return;
-            }
-            cropperData.startX = clientX;
-            cropperData.startY = clientY;
+            } else return;
+            cropperData.startX = clientX; cropperData.startY = clientY;
             e.preventDefault();
         };
 
@@ -563,161 +474,101 @@
             if (!cropperData.isDragging && !cropperData.isResizing) return;
             const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
             const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            
-            const dx = clientX - cropperData.startX;
-            const dy = clientY - cropperData.startY;
-
-            if (cropperData.isDragging) {
-                cropperData.box.x += dx;
-                cropperData.box.y += dy;
-            } else if (cropperData.isResizing) {
+            const dx = clientX - cropperData.startX; const dy = clientY - cropperData.startY;
+            if (cropperData.isDragging) { cropperData.box.x += dx; cropperData.box.y += dy; }
+            else if (cropperData.isResizing) {
                 if (cropperData.resizeDir.includes('e')) cropperData.box.w += dx;
                 if (cropperData.resizeDir.includes('s')) cropperData.box.h += dy;
                 if (cropperData.resizeDir.includes('w')) { cropperData.box.x += dx; cropperData.box.w -= dx; }
                 if (cropperData.resizeDir.includes('n')) { cropperData.box.y += dy; cropperData.box.h -= dy; }
             }
-
-            cropperData.startX = clientX;
-            cropperData.startY = clientY;
-            updateCropBoxUI();
+            cropperData.startX = clientX; cropperData.startY = clientY; updateCropBoxUI();
         };
-
-        window.onmouseup = window.ontouchend = () => {
-            cropperData.isDragging = false;
-            cropperData.isResizing = false;
-        };
+        window.onmouseup = window.ontouchend = () => { cropperData.isDragging = false; cropperData.isResizing = false; };
 
         async function confirmCropAndOCR() {
             setLoading(true);
             const img = document.getElementById('cropper-image');
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-
             const scaleX = img.naturalWidth / img.clientWidth;
             const scaleY = img.naturalHeight / img.clientHeight;
-
-            const finalX = cropperData.box.x * scaleX;
-            const finalY = cropperData.box.y * scaleY;
             const finalW = cropperData.box.w * scaleX;
             const finalH = cropperData.box.h * scaleY;
-
-            canvas.width = finalW;
-            canvas.height = finalH;
-            ctx.drawImage(img, finalX, finalY, finalW, finalH, 0, 0, finalW, finalH);
-
+            canvas.width = finalW; canvas.height = finalH;
+            ctx.drawImage(img, cropperData.box.x*scaleX, cropperData.box.y*scaleY, finalW, finalH, 0, 0, finalW, finalH);
             const croppedBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
             closeCropper();
-
             try {
                 const data = await apiService.call('ocr', { image: croppedBase64 });
                 if (data.result === 'success' && data.text) {
                     document.getElementById('input-reason').value = data.text;
-                    showToast('✨ 區域辨識成功');
-                } else showToast('❌ 無法辨識該區域', true);
-            } catch (e) { showToast('❌ OCR 失敗', true); }
-            finally { setLoading(false); }
+                }
+            } catch (e) { console.error(e); } finally { setLoading(false); }
         }
 
         /* ============================================================
-           [ 原有邏輯 ]
+           [ 原有邏輯更新 ]
            ============================================================ */
         window.onload = () => {
-            initBackground();
-            applyTheme(state.theme);
-            applyFontSize(state.fontSize);
-            updateTimeByMode('regular');
-            
+            initBackground(); applyTheme(state.theme); applyFontSize(state.fontSize); updateTimeByMode('regular');
             document.getElementById('cfg-name').value = state.name;
             document.getElementById('cfg-url').value = state.apiUrl;
             document.getElementById('cfg-reasons').value = state.customReasons;
             document.getElementById('version-label').innerText = '版本 ' + CONFIG.VERSION + (isGasEnv ? ' [GAS]' : ' [WEB]');
             document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
-            
             refreshQuickReasons();
         };
 
         function showTab(tab) {
             state.activeTab = tab;
-            const home = document.getElementById('tab-home');
-            const settings = document.getElementById('tab-settings');
-            const toSet = document.getElementById('btn-to-settings');
-            const toHome = document.getElementById('btn-to-home');
-            const themeSelector = document.getElementById('theme-selector');
+            const home = document.getElementById('tab-home'); const settings = document.getElementById('tab-settings');
+            const toSet = document.getElementById('btn-to-settings'); const toHome = document.getElementById('btn-to-home');
             const title = document.getElementById('page-title');
-
             if (tab === 'home') {
-                home.classList.remove('hidden');
-                settings.classList.add('hidden');
-                toSet.classList.remove('hidden');
-                toHome.classList.add('hidden');
-                themeSelector.style.display = 'flex'; // 恢復顯示
+                home.classList.remove('hidden'); settings.classList.add('hidden');
+                toSet.classList.remove('hidden'); toHome.classList.add('hidden');
                 title.innerText = '無盡火域：神魄登記';
             } else {
-                home.classList.add('hidden');
-                settings.classList.remove('hidden');
-                toSet.classList.add('hidden');
-                toHome.classList.remove('hidden');
-                themeSelector.style.display = 'none'; // 直接隱藏
+                home.classList.add('hidden'); settings.classList.remove('hidden');
+                toSet.classList.add('hidden'); toHome.classList.remove('hidden');
                 title.innerText = '核心系統設置';
             }
         }
 
-        function setTheme(t) {
-            state.theme = t;
-            localStorage.setItem('theme', t);
-            applyTheme(t);
-        }
-
+        function setTheme(t) { state.theme = t; localStorage.setItem('theme', t); applyTheme(t); }
         function applyTheme(t) {
             document.documentElement.setAttribute('data-theme', t);
             document.querySelectorAll('.skin-dot').forEach(btn => btn.classList.remove('active'));
             if (t === 'poryphone') document.getElementById('theme-p').classList.add('active');
             if (t === 'light') document.getElementById('theme-l').classList.add('active');
             if (t === 'dark') document.getElementById('theme-d').classList.add('active');
-            
-            const ocrBtn = document.getElementById('ocr-btn-style');
-            if (t === 'poryphone') ocrBtn.style.background = '#00f2ff';
-            else if (t === 'light') ocrBtn.style.background = '#6366f1';
-            else ocrBtn.style.background = '#f59e0b';
+            document.getElementById('ocr-btn-style').style.background = t==='poryphone' ? '#00f2ff' : (t==='light' ? '#6366f1' : '#f59e0b');
         }
 
         function toggleFontSize() {
             const idx = CONFIG.FONT_STEPS.indexOf(state.fontSize);
-            const nextIdx = (idx + 1) % CONFIG.FONT_STEPS.length;
-            state.fontSize = CONFIG.FONT_STEPS[nextIdx];
-            localStorage.setItem('base_font_size', state.fontSize);
-            applyFontSize(state.fontSize);
+            state.fontSize = CONFIG.FONT_STEPS[(idx + 1) % CONFIG.FONT_STEPS.length];
+            localStorage.setItem('base_font_size', state.fontSize); applyFontSize(state.fontSize);
         }
-
-        function applyFontSize(size) {
-            document.documentElement.style.setProperty('--base-font-size', size + 'px');
-        }
+        function applyFontSize(size) { document.documentElement.style.setProperty('--base-font-size', size + 'px'); }
 
         function setMode(m) {
-            state.mode = m;
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('mode-' + m).classList.add('active');
-            updateTimeByMode(m);
+            state.mode = m; document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('mode-' + m).classList.add('active'); updateTimeByMode(m);
         }
-
         function updateTimeByMode(m) {
-            const nowTime = new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
             document.getElementById('input-startTime').value = ""; 
-            document.getElementById('input-endTime').value = nowTime;
+            document.getElementById('input-endTime').value = new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
         }
 
         function refreshQuickReasons() {
             const select = document.getElementById('quick-reason');
             select.innerHTML = '<option value="" disabled selected>-- 快速事由選擇 --</option>';
-            const list = state.customReasons.split(/[,，\n]+/).map(s => s.trim()).filter(s => s);
-            list.forEach(r => {
-                const opt = document.createElement('option');
-                opt.value = r;
-                opt.innerText = r;
-                select.appendChild(opt);
+            state.customReasons.split(/[,，\n]+/).map(s => s.trim()).filter(s => s).forEach(r => {
+                const opt = document.createElement('option'); opt.value = r; opt.innerText = r; select.appendChild(opt);
             });
         }
-
         function applyQuickReason() {
             const val = document.getElementById('quick-reason').value;
             if (val) document.getElementById('input-reason').value = val;
@@ -727,100 +578,64 @@
             state.name = document.getElementById('cfg-name').value.trim();
             state.apiUrl = document.getElementById('cfg-url').value.trim();
             state.customReasons = document.getElementById('cfg-reasons').value.trim();
-            localStorage.setItem('user_name', state.name);
-            localStorage.setItem('gas_url', state.apiUrl);
-            localStorage.setItem('custom_reasons', state.customReasons);
+            localStorage.setItem('user_name', state.name); localStorage.setItem('gas_url', state.apiUrl); localStorage.setItem('custom_reasons', state.customReasons);
             refreshQuickReasons();
-            showToast('✅ 設定已儲存');
+            showResultModal('success', '設定已儲存', '您的個人偏好與 GAS 服務連結已成功更新。');
             showTab('home');
         }
 
         async function resetTemplate() {
-            if (!isGasEnv && (!state.apiUrl || state.apiUrl.includes('YOUR_SCRIPT_ID'))) return showToast('⚠️ 請先正確設定 URL', true);
+            if (!isGasEnv && (!state.apiUrl || state.apiUrl.includes('YOUR_SCRIPT_ID'))) {
+                return showResultModal('error', '路徑未設定', '請先前往設定頁面填寫正確的 GAS 服務 URL。');
+            }
             if (!confirm("確定要重製雲端試算表範本嗎？")) return;
             setLoading(true);
             try {
                 const data = await apiService.call('reset_template', {});
-                if (data.result === 'success') showToast('✨ 範本已重新生成！');
-                else showToast('❌ ' + (data.error || '重製失敗'), true);
-            } catch (e) { showToast('❌ 執行錯誤', true); }
-            finally { setLoading(false); }
+                if (data.result === 'success') showResultModal('success', '範本已重新生成！', '雲端試算表已根據最新配置重新初始化。');
+                else showResultModal('error', '重製失敗', data.error || '無法連結到雲端服務。');
+            } catch (e) { showResultModal('error', '執行錯誤', '發生網路通訊問題。'); } finally { setLoading(false); }
         }
 
         async function handleOCR(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => openCropper(reader.result);
-            reader.readAsDataURL(file);
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader(); reader.onload = () => openCropper(reader.result); reader.readAsDataURL(file);
         }
 
         async function submitData() {
             const reason = document.getElementById('input-reason').value;
-            if (!reason || !state.name) return showToast('⚠️ 請填寫內容或姓名', true);
-            const startTime = document.getElementById('input-startTime').value;
-            if (!startTime) return showToast('⚠️ 請填寫開始時間', true);
-
+            if (!reason || !state.name) {
+                return showResultModal('error', '資料不完整', '請填寫登記姓名與事由內容再行發送。');
+            }
             setLoading(true);
-            const params = {
-                name: state.name,
-                date: document.getElementById('input-date').value,
-                startTime: startTime,
-                endTime: document.getElementById('input-endTime').value,
-                reason: reason
-            };
+            const params = { name: state.name, date: document.getElementById('input-date').value, startTime: document.getElementById('input-startTime').value, endTime: document.getElementById('input-endTime').value, reason: reason };
             try {
                 const data = await apiService.call('submit', params);
                 if (data.result === 'success') {
-                    showToast('✨ 登記成功！');
+                    showResultModal('success', '登記成功！', '您的資料已同步至雲端試算表，請至試算表確認。');
                     document.getElementById('input-reason').value = '';
-                } else showToast('❌ ' + (data.error || '登記失敗'), true);
-            } catch (e) { showToast('❌ 執行錯誤', true); }
-            finally { setLoading(false); }
+                } else showResultModal('error', '登記失敗', data.error || '伺服器拒絕了您的請求。');
+            } catch (e) { showResultModal('error', '發送失敗', '請檢查網路連線或 GAS URL 是否設定正確。'); } finally { setLoading(false); }
         }
 
-        function setLoading(val) {
-            document.getElementById('loading-overlay').classList.toggle('hidden', !val);
-        }
-
-        function showToast(text, isError = false) {
-            const t = document.getElementById('toast');
-            t.innerText = text;
-            t.style.borderColor = isError ? '#ef4444' : '#6366f1';
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 3000);
-        }
+        function setLoading(val) { document.getElementById('loading-overlay').classList.toggle('hidden', !val); }
 
         function initBackground() {
-            const canvas = document.getElementById('bg-canvas');
-            const ctx = canvas.getContext('2d');
+            const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
             let dots = [];
             function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                dots = [];
-                const gap = 30;
-                for(let x=0; x<canvas.width+gap; x+=gap)
-                    for(let y=0; y<canvas.height+gap; y+=gap)
-                        dots.push({ x, y, phase: Math.random() * Math.PI * 2 });
+                canvas.width = window.innerWidth; canvas.height = window.innerHeight; dots = [];
+                for(let x=0; x<canvas.width+30; x+=30) for(let y=0; y<canvas.height+30; y+=30) dots.push({ x, y, phase: Math.random()*Math.PI*2 });
             }
             function animate(time) {
-                ctx.clearRect(0,0, canvas.width, canvas.height);
-                const isPory = state.theme === 'poryphone';
-                ctx.fillStyle = isPory ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+                ctx.clearRect(0,0, canvas.width, canvas.height); ctx.fillStyle = state.theme === 'poryphone' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
                 dots.forEach(d => {
                     const mod = Math.sin(time/1000 + d.phase);
-                    if (mod > 0.8) {
-                        ctx.globalAlpha = (mod - 0.8) * 5;
-                        ctx.beginPath();
-                        ctx.arc(d.x, d.y, 1.5, 0, Math.PI*2);
-                        ctx.fill();
-                    }
+                    if (mod > 0.8) { ctx.globalAlpha = (mod - 0.8) * 5; ctx.beginPath(); ctx.arc(d.x, d.y, 1.5, 0, Math.PI*2); ctx.fill(); }
                 });
                 requestAnimationFrame(animate);
             }
-            window.onresize = resize;
-            resize(); animate(0);
+            window.onresize = resize; resize(); animate(0);
         }
     </script>
 </body>
