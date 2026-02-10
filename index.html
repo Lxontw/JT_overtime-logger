@@ -205,10 +205,19 @@
         <!-- Header -->
         <header class="flex flex-col gap-5">
             <div class="flex justify-between items-center h-14">
-                <button onclick="toggleFontSize()" class="font-scaler-btn shadow-sm">
-                    <span class="text-xl serif leading-none">Aa</span>
-                </button>
+                
+                <!-- 左側按鈕群組：字體大小與預覽 -->
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleFontSize()" class="font-scaler-btn shadow-sm">
+                        <span class="text-xl serif leading-none">Aa</span>
+                    </button>
+                    <!-- 移除 theme-dynamic-bg、text-white 等 class，與 Aa 樣式同步 -->
+                    <button onclick="openPreview()" class="font-scaler-btn shadow-sm" title="預覽試算表">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
 
+                <!-- 右側按鈕群組：主題切換與設定 -->
                 <div class="flex items-center gap-3">
                     <div id="theme-selector" class="flex gap-2">
                         <button onclick="setTheme('poryphone')" class="skin-dot" id="theme-p">P</button>
@@ -217,7 +226,6 @@
                     </div>
 
                     <div id="header-toggle-area" class="relative w-11 h-11">
-                        <!-- 修正了先前的亂碼，還原乾淨的齒輪 SVG -->
                         <button id="btn-to-settings" onclick="showTab('settings')" class="gear-btn absolute inset-0">
                             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="3"/>
@@ -273,7 +281,8 @@
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-center h-12">
                         <span class="section-tag">事由 / 備註內容</span>
-                        <button onclick="document.getElementById('file-ocr').click()" class="w-11 h-11 rounded-xl text-white flex items-center justify-center shadow-lg" id="ocr-btn-style">
+                        <!-- 相機 OCR 按鈕 -->
+                        <button onclick="document.getElementById('file-ocr').click()" class="w-11 h-11 rounded-xl text-white flex items-center justify-center shadow-lg theme-dynamic-bg" title="影像文字辨識">
                             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                         </button>
                     </div>
@@ -392,7 +401,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.3.8 [保留六角圖示與自定義警告 + 預覽結果]',
+            VERSION: 'V2.3.10 [預覽樣式同步Aa]',
             FONT_STEPS: [14, 18, 22]
         };
 
@@ -667,7 +676,11 @@
             if (t === 'poryphone') document.getElementById('theme-p').classList.add('active');
             if (t === 'light') document.getElementById('theme-l').classList.add('active');
             if (t === 'dark') document.getElementById('theme-d').classList.add('active');
-            document.getElementById('ocr-btn-style').style.background = t==='poryphone' ? '#00f2ff' : (t==='light' ? '#6366f1' : '#f59e0b');
+            
+            const dynamicBgColor = t==='poryphone' ? '#00f2ff' : (t==='light' ? '#6366f1' : '#f59e0b');
+            document.querySelectorAll('.theme-dynamic-bg').forEach(el => {
+                el.style.background = dynamicBgColor;
+            });
         }
 
         function toggleFontSize() {
