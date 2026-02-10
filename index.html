@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW" data-theme="poryphone">
 <head>
@@ -304,6 +303,10 @@
                             <input type="text" id="cfg-url" class="p-4 w-full" placeholder="https://script.google.com/...">
                         </div>
                         <div>
+                            <label class="text-xs font-black opacity-60 uppercase mb-1 block">Google Sheet 預覽網址 <span class="text-[10px] font-normal lowercase">(推薦填寫共用連結)</span></label>
+                            <input type="text" id="cfg-sheet-url" class="p-4 w-full" placeholder="https://docs.google.com/spreadsheets/d/...">
+                        </div>
+                        <div>
                             <label class="text-xs font-black opacity-60 uppercase mb-1 block">自定義快速事由 (逗號分隔)</label>
                             <textarea id="cfg-reasons" rows="4" class="p-4 w-full" placeholder="選項1, 選項2..."></textarea>
                         </div>
@@ -354,10 +357,29 @@
                     確認
                 </button>
             </div>
-            <!-- 自定義對話框結構 (用於重製警告) -->
+            <!-- 自定義對話框結構 (用於重製警告與送出成功後之預覽選項) -->
             <div id="modal-custom-content" class="hidden">
                 <!-- 自定義 HTML 會插入這裡 -->
             </div>
+        </div>
+    </div>
+
+    <!-- iframe 內嵌預覽層 -->
+    <div id="preview-modal" class="fixed inset-0 z-[7000] bg-black bg-opacity-80 backdrop-blur-md hidden flex-col px-4 pt-10 pb-6">
+        <div class="flex justify-between items-center px-4 py-3 bg-white/15 rounded-t-2xl border border-white/20 shadow-lg shrink-0">
+            <span class="text-white font-black tracking-widest text-lg">📋 試算表預覽</span>
+            <button onclick="closePreview()" class="close-btn shadow-lg transform active:scale-95 flex items-center justify-center shrink-0" style="width:38px; height:38px; border-width: 2px;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <div class="flex-1 w-full bg-white rounded-b-2xl overflow-hidden shadow-2xl relative border border-t-0 border-white/20">
+            <!-- Loading 底圖提示 -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400 z-0">
+                <svg class="animate-spin mb-3 text-slate-300" width="40" height="40" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <span class="font-bold text-sm">載入原始試算表中...</span>
+                <span class="text-xs opacity-70 mt-1 max-w-[200px] text-center">如果一直沒有畫面顯示，請確認權限是否有公開或至設定更改預覽網址</span>
+            </div>
+            <iframe id="preview-iframe" class="relative z-10 w-full h-full border-none bg-transparent" src=""></iframe>
         </div>
     </div>
 
@@ -370,7 +392,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.3.8 [保留六角圖示與自定義警告]',
+            VERSION: 'V2.3.8 [保留六角圖示與自定義警告 + 預覽結果]',
             FONT_STEPS: [14, 18, 22]
         };
 
@@ -382,6 +404,7 @@
             fontSize: parseInt(localStorage.getItem('base_font_size')) || 18,
             mode: 'regular',
             apiUrl: localStorage.getItem('gas_url') || CONFIG.GAS_URL,
+            sheetUrl: localStorage.getItem('sheet_url') || '',
             customReasons: localStorage.getItem('custom_reasons') || CONFIG.DEFAULT_REASONS,
             name: localStorage.getItem('user_name') || ''
         };
@@ -460,6 +483,32 @@
             document.getElementById('resultModal').classList.remove('active');
             document.body.style.overflow = '';
         }
+
+        /* ============================================================
+           [ iframe 預覽相關邏輯 ]
+           ============================================================ */
+        window.openPreview = () => {
+            if (!state.sheetUrl) {
+                alert('請先至「設定 (齒輪圖示)」填寫 Google Sheet 預覽網址！');
+                return;
+            }
+            closeResultModal();
+            const previewModal = document.getElementById('preview-modal');
+            const previewIframe = document.getElementById('preview-iframe');
+            previewIframe.src = state.sheetUrl;
+            previewModal.classList.remove('hidden');
+            previewModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closePreview = () => {
+            const previewModal = document.getElementById('preview-modal');
+            const previewIframe = document.getElementById('preview-iframe');
+            previewModal.classList.add('hidden');
+            previewModal.classList.remove('flex');
+            previewIframe.src = '';
+            document.body.style.overflow = '';
+        };
 
         // 相容您提供的執行腳本所呼叫的方法
         window.closeToast = () => {
@@ -588,6 +637,7 @@
             initBackground(); applyTheme(state.theme); applyFontSize(state.fontSize); updateTimeByMode('regular');
             document.getElementById('cfg-name').value = state.name;
             document.getElementById('cfg-url').value = state.apiUrl;
+            document.getElementById('cfg-sheet-url').value = state.sheetUrl;
             document.getElementById('cfg-reasons').value = state.customReasons;
             document.getElementById('version-label').innerText = '版本 ' + CONFIG.VERSION + (isGasEnv ? ' [GAS]' : ' [WEB]');
             document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
@@ -651,10 +701,14 @@
         function saveSettings() {
             state.name = document.getElementById('cfg-name').value.trim();
             state.apiUrl = document.getElementById('cfg-url').value.trim();
+            state.sheetUrl = document.getElementById('cfg-sheet-url').value.trim();
             state.customReasons = document.getElementById('cfg-reasons').value.trim();
-            localStorage.setItem('user_name', state.name); localStorage.setItem('gas_url', state.apiUrl); localStorage.setItem('custom_reasons', state.customReasons);
+            localStorage.setItem('user_name', state.name); 
+            localStorage.setItem('gas_url', state.apiUrl); 
+            localStorage.setItem('sheet_url', state.sheetUrl);
+            localStorage.setItem('custom_reasons', state.customReasons);
             refreshQuickReasons();
-            showResultModal('success', '設定已儲存', '您的個人偏好與 GAS 服務連結已成功更新。');
+            showResultModal('success', '設定已儲存', '您的個人偏好與連結配置已成功更新。');
             showTab('home');
         }
 
@@ -673,10 +727,35 @@
             try {
                 const data = await apiService.call('submit', params);
                 if (data.result === 'success') {
-                    showResultModal('success', '登記成功！', '您的資料已同步至雲端試算表，請至試算表確認。');
+                    // 成功後清空輸入框並顯示客製化送出成功視窗
                     document.getElementById('input-reason').value = '';
-                } else showResultModal('error', '登記失敗', data.error || '伺服器拒絕了您的請求。');
-            } catch (e) { showResultModal('error', '發送失敗', '請檢查網路連線或 GAS URL 是否設定正確。'); } finally { setLoading(false); }
+                    
+                    const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                    const contentHtml = `
+                        <div class="result-icon-circle icon-success">
+                            ${successSvg}
+                        </div>
+                        <h3 class="modal-title" style="margin-bottom:12px;">登記成功！</h3>
+                        <div style="text-align:left; font-size:0.95rem; color:#64748b; line-height:1.6; background:#f1f5f9; padding:16px; border-radius:16px; margin-bottom:24px;">
+                            ✅ 您的資料已同步至雲端試算表。<br><br>
+                            <span style="color:#0f172a; font-weight:900;">選項 A（堅持原味）：</span><br>
+                            「我能接受手動往下滑跟畫面有點擠，我就是要看到 Google Sheet 原生的畫面才安心！」<br>
+                            👉 點擊預覽結果開啟內嵌試算表。
+                        </div>
+                        <div style="display: flex; gap: 12px; width: 100%;">
+                            <button style="flex:1; padding:16px; border-radius:16px; border:none; background:#94a3b8; color:white; font-weight:900; cursor:pointer; transition:0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="closeResultModal()">確定</button>
+                            <button style="flex:1; padding:16px; border-radius:16px; border:none; background:var(--accent); color:white; font-weight:900; cursor:pointer; transition:0.2s; text-shadow:0 1px 2px rgba(0,0,0,0.2);" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="openPreview()">預覽結果</button>
+                        </div>
+                    `;
+                    showCustomModal(contentHtml);
+                } else {
+                    showResultModal('error', '登記失敗', data.error || '伺服器拒絕了您的請求。');
+                }
+            } catch (e) { 
+                showResultModal('error', '發送失敗', '請檢查網路連線或 GAS URL 是否設定正確。'); 
+            } finally { 
+                setLoading(false); 
+            }
         }
 
         function setLoading(val) { document.getElementById('loading-overlay').classList.toggle('hidden', !val); }
