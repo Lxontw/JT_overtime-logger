@@ -153,12 +153,12 @@
         .cropper-actions { background: rgba(0,0,0,0.8); padding: 20px; display: flex; gap: 12px; justify-content: center; }
 
         /* =========================================
-           新版專業對話框 (Modal Dialog)
+           專業對話框 (Modal Dialog)
            ========================================= */
         .modal-overlay {
             position: fixed; inset: 0; z-index: 5000;
             background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: center;
             padding: 24px; opacity: 0; pointer-events: none;
             transition: opacity 0.3s ease-out;
@@ -218,8 +218,12 @@
                     </div>
 
                     <div id="header-toggle-area" class="relative w-11 h-11">
+                        <!-- 修正了先前的亂碼，還原乾淨的齒輪 SVG -->
                         <button id="btn-to-settings" onclick="showTab('settings')" class="gear-btn absolute inset-0">
-                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
                         </button>
                         <button id="btn-to-home" onclick="showTab('home')" class="close-btn absolute inset-0 hidden">
                             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -306,8 +310,10 @@
                     </div>
                 </div>
                 <div class="flex flex-col gap-3">
+                    <!-- 使用統一的 btn-action 六角形風格 -->
                     <button onclick="saveSettings()" class="btn-action w-full py-5 font-black">儲存設定並返回</button>
-                    <button onclick="resetTemplate()" class="btn-action btn-danger w-full py-5 font-black">重製雲端試算表範本</button>
+                    <!-- 使用 btn-action + btn-danger 達到完美的紅色六角形外觀 -->
+                    <button onclick="confirmReset()" class="btn-action btn-danger w-full py-5 font-black mt-2">重製雲端試算表範本</button>
                 </div>
                 <div id="version-label" class="text-center opacity-40 text-xs mt-4">版本載入中...</div>
             </div>
@@ -336,15 +342,22 @@
 
     <!-- 專業結果對話框 (Result Modal) -->
     <div id="resultModal" class="modal-overlay" onclick="closeResultModal()">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <div id="result-icon-container" class="result-icon-circle">
-                <!-- SVG 會由 JS 動態插入 -->
+        <div class="modal-card" id="modal-card-body" onclick="event.stopPropagation()">
+            <!-- 標準對話框結構 -->
+            <div id="modal-standard-content">
+                <div id="result-icon-container" class="result-icon-circle">
+                    <!-- SVG 會由 JS 動態插入 -->
+                </div>
+                <h3 id="result-title" class="modal-title">標題內容</h3>
+                <p id="result-desc" class="modal-desc">詳細描述文字...</p>
+                <button onclick="closeResultModal()" id="modal-standard-btn" class="modal-btn">
+                    確認
+                </button>
             </div>
-            <h3 id="result-title" class="modal-title">標題內容</h3>
-            <p id="result-desc" class="modal-desc">詳細描述文字...</p>
-            <button onclick="closeResultModal()" class="modal-btn">
-                確認
-            </button>
+            <!-- 自定義對話框結構 (用於重製警告) -->
+            <div id="modal-custom-content" class="hidden">
+                <!-- 自定義 HTML 會插入這裡 -->
+            </div>
         </div>
     </div>
 
@@ -357,7 +370,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.3.5 [專業彈出對話框]',
+            VERSION: 'V2.3.8 [保留六角圖示與自定義警告]',
             FONT_STEPS: [14, 18, 22]
         };
 
@@ -408,22 +421,37 @@
         };
 
         /* ============================================================
-           [ 專業彈出對話框邏輯 ]
+           [ 專業對話框與 Toast 映射邏輯 ]
            ============================================================ */
         function showResultModal(type, title, desc) {
             const modal = document.getElementById('resultModal');
+            document.getElementById('modal-standard-content').classList.remove('hidden');
+            document.getElementById('modal-custom-content').classList.add('hidden');
+
             const iconContainer = document.getElementById('result-icon-container');
-            const titleEl = document.getElementById('result-title');
-            const descEl = document.getElementById('result-desc');
+            document.getElementById('result-title').innerText = title;
+            document.getElementById('result-desc').innerText = desc;
             
-            titleEl.innerText = title;
-            descEl.innerText = desc;
             iconContainer.className = 'result-icon-circle ' + (type === 'success' ? 'icon-success' : 'icon-error');
-            
             const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
             const errorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>`;
             
             iconContainer.innerHTML = (type === 'success' ? successSvg : errorSvg);
+            
+            // 如果描述中帶有 loading 符號，隱藏按鈕
+            const btn = document.getElementById('modal-standard-btn');
+            if (btn) btn.style.display = desc.includes('⏳') ? 'none' : 'block';
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function showCustomModal(contentHtml) {
+            const modal = document.getElementById('resultModal');
+            document.getElementById('modal-standard-content').classList.add('hidden');
+            const customArea = document.getElementById('modal-custom-content');
+            customArea.innerHTML = contentHtml;
+            customArea.classList.remove('hidden');
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -433,8 +461,57 @@
             document.body.style.overflow = '';
         }
 
+        // 相容您提供的執行腳本所呼叫的方法
+        window.closeToast = () => {
+            closeResultModal();
+        };
+        
+        window.toast = (msg) => {
+            showResultModal('success', '系統處理', msg);
+        };
+
         /* ============================================================
-           [ 裁切邏輯 ]
+           [ 原生重製邏輯整合 ]
+           ============================================================ */
+        window.confirmReset = () => {
+            const url = localStorage.getItem('gas_url');
+            if(!url) return alert('請先設定 API 網址');
+            const content = `
+                <div style="font-size: 4rem; color: #ef4444; margin-bottom: 10px;">⚠️</div>
+                <div style="font-size: 1.5rem; color: #ef4444; margin-bottom: 5px; font-weight:800;">嚴重警告</div>
+                <div style="font-size: 1rem; color: #666; line-height: 1.6; font-weight:600;">確定要重設範本嗎？<br>此動作將會覆蓋雲端定義且無法撤銷！</div>
+                <div style="display: flex; gap: 15px; width: 100%; margin-top: 24px;">
+                    <button style="flex:1; padding:15px; border-radius:12px; border:none; background:#eee; color:#333; font-weight:900; cursor:pointer;" onclick="closeToast()">取消返回</button>
+                    <button style="flex:1; padding:15px; border-radius:12px; border:none; background:#ef4444; color:white; font-weight:900; cursor:pointer;" onclick="executeReset()">確認重設</button>
+                </div>`;
+            showCustomModal(content);
+        };
+
+        window.executeReset = () => {
+            const url = localStorage.getItem('gas_url');
+            closeToast();
+            toast('⏳ 重設請求傳送中...');
+            const fd = new FormData(); fd.append('action', 'reset_template');
+            fetch(url, { method: 'POST', body: fd })
+                .then(r => r.json()).then(d => {
+                    if(d.result === 'success' || d.status === 'success') {
+                        toast('✅ 範本重設成功');
+                        setTimeout(() => {
+                            alert('✅ 範本已成功重設！\n\n下次建立新月份時將套用新格式。\n(舊的月份需要手動刪除工作表才會生效)');
+                            closeToast();
+                        }, 800);
+                    } else {
+                        alert('❌ 重設失敗: ' + (d.error || '未知錯誤'));
+                        closeToast();
+                    }
+                }).catch(() => {
+                    alert('❌ 連線異常');
+                    closeToast();
+                });
+        };
+
+        /* ============================================================
+           [ 裁切與基礎邏輯 ]
            ============================================================ */
         let cropperData = { img: null, box: { x: 50, y: 50, w: 200, h: 100 }, isDragging: false, isResizing: false, resizeDir: '', startX: 0, startY: 0 };
         function openCropper(base64) {
@@ -507,9 +584,6 @@
             } catch (e) { console.error(e); } finally { setLoading(false); }
         }
 
-        /* ============================================================
-           [ 原有邏輯更新 ]
-           ============================================================ */
         window.onload = () => {
             initBackground(); applyTheme(state.theme); applyFontSize(state.fontSize); updateTimeByMode('regular');
             document.getElementById('cfg-name').value = state.name;
@@ -582,19 +656,6 @@
             refreshQuickReasons();
             showResultModal('success', '設定已儲存', '您的個人偏好與 GAS 服務連結已成功更新。');
             showTab('home');
-        }
-
-        async function resetTemplate() {
-            if (!isGasEnv && (!state.apiUrl || state.apiUrl.includes('YOUR_SCRIPT_ID'))) {
-                return showResultModal('error', '路徑未設定', '請先前往設定頁面填寫正確的 GAS 服務 URL。');
-            }
-            if (!confirm("確定要重製雲端試算表範本嗎？")) return;
-            setLoading(true);
-            try {
-                const data = await apiService.call('reset_template', {});
-                if (data.result === 'success') showResultModal('success', '範本已重新生成！', '雲端試算表已根據最新配置重新初始化。');
-                else showResultModal('error', '重製失敗', data.error || '無法連結到雲端服務。');
-            } catch (e) { showResultModal('error', '執行錯誤', '發生網路通訊問題。'); } finally { setLoading(false); }
         }
 
         async function handleOCR(input) {
