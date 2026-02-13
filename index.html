@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW" data-theme="poryphone">
 <head>
@@ -211,7 +212,6 @@
                     <button onclick="toggleFontSize()" class="font-scaler-btn shadow-sm">
                         <span class="text-xl serif leading-none">Aa</span>
                     </button>
-                    <!-- 移除 theme-dynamic-bg、text-white 等 class，與 Aa 樣式同步 -->
                     <button onclick="openPreview()" class="font-scaler-btn shadow-sm" title="預覽試算表">
                         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
@@ -322,9 +322,7 @@
                     </div>
                 </div>
                 <div class="flex flex-col gap-3">
-                    <!-- 使用統一的 btn-action 六角形風格 -->
                     <button onclick="saveSettings()" class="btn-action w-full py-5 font-black">儲存設定並返回</button>
-                    <!-- 使用 btn-action + btn-danger 達到完美的紅色六角形外觀 -->
                     <button onclick="confirmReset()" class="btn-action btn-danger w-full py-5 font-black mt-2">重製雲端試算表範本</button>
                 </div>
                 <div id="version-label" class="text-center opacity-40 text-xs mt-4">版本載入中...</div>
@@ -357,19 +355,13 @@
         <div class="modal-card" id="modal-card-body" onclick="event.stopPropagation()">
             <!-- 標準對話框結構 -->
             <div id="modal-standard-content">
-                <div id="result-icon-container" class="result-icon-circle">
-                    <!-- SVG 會由 JS 動態插入 -->
-                </div>
+                <div id="result-icon-container" class="result-icon-circle"></div>
                 <h3 id="result-title" class="modal-title">標題內容</h3>
                 <p id="result-desc" class="modal-desc">詳細描述文字...</p>
-                <button onclick="closeResultModal()" id="modal-standard-btn" class="modal-btn">
-                    確認
-                </button>
+                <button onclick="closeResultModal()" id="modal-standard-btn" class="modal-btn">確認</button>
             </div>
-            <!-- 自定義對話框結構 (用於重製警告與送出成功後之預覽選項) -->
-            <div id="modal-custom-content" class="hidden">
-                <!-- 自定義 HTML 會插入這裡 -->
-            </div>
+            <!-- 自定義對話框結構 -->
+            <div id="modal-custom-content" class="hidden"></div>
         </div>
     </div>
 
@@ -382,7 +374,6 @@
             </button>
         </div>
         <div class="flex-1 w-full bg-white rounded-b-2xl overflow-hidden shadow-2xl relative border border-t-0 border-white/20">
-            <!-- Loading 底圖提示 -->
             <div class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400 z-0">
                 <svg class="animate-spin mb-3 text-slate-300" width="40" height="40" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 <span class="font-bold text-sm">載入原始試算表中...</span>
@@ -401,7 +392,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.3.10 [預覽樣式同步Aa]',
+            VERSION: 'V2.3.11 [本地日期邏輯修正]',
             FONT_STEPS: [14, 18, 22]
         };
 
@@ -417,6 +408,14 @@
             customReasons: localStorage.getItem('custom_reasons') || CONFIG.DEFAULT_REASONS,
             name: localStorage.getItem('user_name') || ''
         };
+
+        // 取得本地日期 (YYYY-MM-DD)
+        function getLocalDateString() {
+            const now = new Date();
+            const offset = now.getTimezoneOffset();
+            const local = new Date(now.getTime() - (offset * 60 * 1000));
+            return local.toISOString().split('T')[0];
+        }
 
         const apiService = {
             call: async (action, params) => {
@@ -452,28 +451,19 @@
             }
         };
 
-        /* ============================================================
-           [ 專業對話框與 Toast 映射邏輯 ]
-           ============================================================ */
         function showResultModal(type, title, desc) {
             const modal = document.getElementById('resultModal');
             document.getElementById('modal-standard-content').classList.remove('hidden');
             document.getElementById('modal-custom-content').classList.add('hidden');
-
             const iconContainer = document.getElementById('result-icon-container');
             document.getElementById('result-title').innerText = title;
             document.getElementById('result-desc').innerText = desc;
-            
             iconContainer.className = 'result-icon-circle ' + (type === 'success' ? 'icon-success' : 'icon-error');
             const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
             const errorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>`;
-            
             iconContainer.innerHTML = (type === 'success' ? successSvg : errorSvg);
-            
-            // 如果描述中帶有 loading 符號，隱藏按鈕
             const btn = document.getElementById('modal-standard-btn');
             if (btn) btn.style.display = desc.includes('⏳') ? 'none' : 'block';
-
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -493,14 +483,8 @@
             document.body.style.overflow = '';
         }
 
-        /* ============================================================
-           [ iframe 預覽相關邏輯 ]
-           ============================================================ */
         window.openPreview = () => {
-            if (!state.sheetUrl) {
-                alert('請先至「設定 (齒輪圖示)」填寫 Google Sheet 預覽網址！');
-                return;
-            }
+            if (!state.sheetUrl) { alert('請先至「設定」填寫 Google Sheet 預覽網址！'); return; }
             closeResultModal();
             const previewModal = document.getElementById('preview-modal');
             const previewIframe = document.getElementById('preview-iframe');
@@ -519,18 +503,9 @@
             document.body.style.overflow = '';
         };
 
-        // 相容您提供的執行腳本所呼叫的方法
-        window.closeToast = () => {
-            closeResultModal();
-        };
-        
-        window.toast = (msg) => {
-            showResultModal('success', '系統處理', msg);
-        };
+        window.closeToast = () => { closeResultModal(); };
+        window.toast = (msg) => { showResultModal('success', '系統處理', msg); };
 
-        /* ============================================================
-           [ 原生重製邏輯整合 ]
-           ============================================================ */
         window.confirmReset = () => {
             const url = localStorage.getItem('gas_url');
             if(!url) return alert('請先設定 API 網址');
@@ -554,10 +529,6 @@
                 .then(r => r.json()).then(d => {
                     if(d.result === 'success' || d.status === 'success') {
                         toast('✅ 範本重設成功');
-                        setTimeout(() => {
-                            alert('✅ 範本已成功重設！\n\n下次建立新月份時將套用新格式。\n(舊的月份需要手動刪除工作表才會生效)');
-                            closeToast();
-                        }, 800);
                     } else {
                         alert('❌ 重設失敗: ' + (d.error || '未知錯誤'));
                         closeToast();
@@ -568,9 +539,6 @@
                 });
         };
 
-        /* ============================================================
-           [ 裁切與基礎邏輯 ]
-           ============================================================ */
         let cropperData = { img: null, box: { x: 50, y: 50, w: 200, h: 100 }, isDragging: false, isResizing: false, resizeDir: '', startX: 0, startY: 0 };
         function openCropper(base64) {
             const modal = document.getElementById('cropper-modal');
@@ -643,13 +611,17 @@
         }
 
         window.onload = () => {
-            initBackground(); applyTheme(state.theme); applyFontSize(state.fontSize); updateTimeByMode('regular');
+            initBackground(); applyTheme(state.theme); applyFontSize(state.fontSize); 
             document.getElementById('cfg-name').value = state.name;
             document.getElementById('cfg-url').value = state.apiUrl;
             document.getElementById('cfg-sheet-url').value = state.sheetUrl;
             document.getElementById('cfg-reasons').value = state.customReasons;
             document.getElementById('version-label').innerText = '版本 ' + CONFIG.VERSION + (isGasEnv ? ' [GAS]' : ' [WEB]');
-            document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
+            
+            // 使用修正後的本地時間邏輯
+            document.getElementById('input-date').value = getLocalDateString();
+            updateTimeByMode('regular');
+            
             refreshQuickReasons();
         };
 
@@ -676,11 +648,8 @@
             if (t === 'poryphone') document.getElementById('theme-p').classList.add('active');
             if (t === 'light') document.getElementById('theme-l').classList.add('active');
             if (t === 'dark') document.getElementById('theme-d').classList.add('active');
-            
             const dynamicBgColor = t==='poryphone' ? '#00f2ff' : (t==='light' ? '#6366f1' : '#f59e0b');
-            document.querySelectorAll('.theme-dynamic-bg').forEach(el => {
-                el.style.background = dynamicBgColor;
-            });
+            document.querySelectorAll('.theme-dynamic-bg').forEach(el => { el.style.background = dynamicBgColor; });
         }
 
         function toggleFontSize() {
@@ -692,11 +661,17 @@
 
         function setMode(m) {
             state.mode = m; document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('mode-' + m).classList.add('active'); updateTimeByMode(m);
+            document.getElementById('mode-' + m).classList.add('active'); 
+            updateTimeByMode(m);
         }
         function updateTimeByMode(m) {
+            const now = new Date();
             document.getElementById('input-startTime').value = ""; 
-            document.getElementById('input-endTime').value = new Date().toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            document.getElementById('input-endTime').value = now.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            // 如果日期欄位是空的，補上今日
+            if(!document.getElementById('input-date').value) {
+                document.getElementById('input-date').value = getLocalDateString();
+            }
         }
 
         function refreshQuickReasons() {
@@ -740,35 +715,24 @@
             try {
                 const data = await apiService.call('submit', params);
                 if (data.result === 'success') {
-                    // 成功後清空輸入框並顯示客製化送出成功視窗
                     document.getElementById('input-reason').value = '';
-                    
                     const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
                     const contentHtml = `
-                        <div class="result-icon-circle icon-success">
-                            ${successSvg}
-                        </div>
+                        <div class="result-icon-circle icon-success">${successSvg}</div>
                         <h3 class="modal-title" style="margin-bottom:12px;">登記成功！</h3>
                         <div style="text-align:left; font-size:0.95rem; color:#64748b; line-height:1.6; background:#f1f5f9; padding:16px; border-radius:16px; margin-bottom:24px;">
-                            ✅ 您的資料已同步至雲端試算表。<br><br>
-                            <span style="color:#0f172a; font-weight:900;">選項 A（堅持原味）：</span><br>
-                            「我能接受手動往下滑跟畫面有點擠，我就是要看到 Google Sheet 原生的畫面才安心！」<br>
-                            👉 點擊預覽結果開啟內嵌試算表。
+                            ✅ 您的資料已同步至雲端試算表。
                         </div>
                         <div style="display: flex; gap: 12px; width: 100%;">
-                            <button style="flex:1; padding:16px; border-radius:16px; border:none; background:#94a3b8; color:white; font-weight:900; cursor:pointer; transition:0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="closeResultModal()">確定</button>
-                            <button style="flex:1; padding:16px; border-radius:16px; border:none; background:var(--accent); color:white; font-weight:900; cursor:pointer; transition:0.2s; text-shadow:0 1px 2px rgba(0,0,0,0.2);" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onclick="openPreview()">預覽結果</button>
+                            <button style="flex:1; padding:16px; border-radius:16px; border:none; background:#94a3b8; color:white; font-weight:900; cursor:pointer;" onclick="closeResultModal()">確定</button>
+                            <button style="flex:1; padding:16px; border-radius:16px; border:none; background:var(--accent); color:white; font-weight:900; cursor:pointer;" onclick="openPreview()">預覽結果</button>
                         </div>
                     `;
                     showCustomModal(contentHtml);
                 } else {
                     showResultModal('error', '登記失敗', data.error || '伺服器拒絕了您的請求。');
                 }
-            } catch (e) { 
-                showResultModal('error', '發送失敗', '請檢查網路連線或 GAS URL 是否設定正確。'); 
-            } finally { 
-                setLoading(false); 
-            }
+            } catch (e) { showResultModal('error', '發送失敗', '請檢查連線或 GAS URL。'); } finally { setLoading(false); }
         }
 
         function setLoading(val) { document.getElementById('loading-overlay').classList.toggle('hidden', !val); }
@@ -781,7 +745,8 @@
                 for(let x=0; x<canvas.width+30; x+=30) for(let y=0; y<canvas.height+30; y+=30) dots.push({ x, y, phase: Math.random()*Math.PI*2 });
             }
             function animate(time) {
-                ctx.clearRect(0,0, canvas.width, canvas.height); ctx.fillStyle = state.theme === 'poryphone' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+                ctx.clearRect(0,0, canvas.width, canvas.height); 
+                ctx.fillStyle = state.theme === 'poryphone' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
                 dots.forEach(d => {
                     const mod = Math.sin(time/1000 + d.phase);
                     if (mod > 0.8) { ctx.globalAlpha = (mod - 0.8) * 5; ctx.beginPath(); ctx.arc(d.x, d.y, 1.5, 0, Math.PI*2); ctx.fill(); }
