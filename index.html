@@ -446,12 +446,17 @@
             FONT_STEPS: [14, 18, 22],
             DEFAULT_OFF_TIMES: {
                 morning: '17:00',
-                evening: '00:00',
-                special: '17:00'
+                evening: '03:00',
+                special: '12:00'
             }
         };
 
         const isGasEnv = typeof google !== 'undefined' && google.script && google.script.run;
+
+        let savedTimes = JSON.parse(localStorage.getItem('normal_off_times'));
+        if (savedTimes && savedTimes.evening === '00:00' && savedTimes.special === '17:00') {
+            savedTimes = null; // 強制更新為新預設值
+        }
 
         let state = {
             activeTab: 'home',
@@ -462,7 +467,7 @@
             sheetUrl: localStorage.getItem('sheet_url') || '',
             customReasons: localStorage.getItem('custom_reasons') || CONFIG.DEFAULT_REASONS,
             name: localStorage.getItem('user_name') || '',
-            normalOffTimes: JSON.parse(localStorage.getItem('normal_off_times')) || CONFIG.DEFAULT_OFF_TIMES
+            normalOffTimes: savedTimes || CONFIG.DEFAULT_OFF_TIMES
         };
 
         // 取得本地日期 (YYYY-MM-DD)
@@ -761,6 +766,9 @@
             document.getElementById('input-startTime').value = startTimeStr;
             document.getElementById('input-endTime').value = endTimeStr;
             
+            // 切換模式時，將結束日期重置為今天
+            document.getElementById('input-endDate').value = getLocalDateString(now);
+            
             recalculateDates();
         }
 
@@ -769,12 +777,23 @@
             const endTimeStr = document.getElementById('input-endTime').value;
             
             let endDateStr = document.getElementById('input-endDate').value;
-            let endDate = endDateStr ? new Date(endDateStr) : new Date();
+            let endDate = new Date();
+            if (endDateStr) {
+                const [y, m, d] = endDateStr.split('-');
+                endDate = new Date(y, m - 1, d);
+            }
             let startDate = new Date(endDate);
             
-            // 跨夜邏輯：如果結束時間(加班結束) 小於 開始時間(正常下班)，代表跨過了午夜
-            if (startTimeStr && endTimeStr && endTimeStr < startTimeStr) {
+            if (state.mode === 'evening') {
+                // 晚班模式：因為都是跨日，所以開始日期是結束日期前一天
                 startDate.setDate(startDate.getDate() - 1);
+            } else if (state.mode === 'morning' || state.mode === 'special') {
+                // 早班、特殊時段：開始日期等於結束日期
+            } else {
+                // 預設跨夜邏輯：如果結束時間小於開始時間，代表跨過了午夜
+                if (startTimeStr && endTimeStr && endTimeStr < startTimeStr) {
+                    startDate.setDate(startDate.getDate() - 1);
+                }
             }
             
             document.getElementById('input-startDate').value = getLocalDateString(startDate);
