@@ -264,9 +264,15 @@
 
         <main>
             <div id="tab-home" class="flex flex-col gap-6">
-                <div class="flex flex-col gap-2">
-                    <span class="section-tag">登記日期</span>
-                    <input type="date" id="input-date" class="p-4 font-bold">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                        <span class="section-tag">開始日期 <span class="text-xs opacity-60">(上班日)</span></span>
+                        <input type="date" id="input-startDate" class="p-4 font-bold w-full">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <span class="section-tag">結束日期 <span class="text-xs opacity-60">(下班日)</span></span>
+                        <input type="date" id="input-endDate" class="p-4 font-bold w-full">
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-2">
@@ -289,7 +295,7 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col gap-2">
-                        <span class="section-tag">開始時間</span>
+                        <span class="section-tag">開始時間 <span class="text-xs opacity-60">(正常下班)</span></span>
                         <div class="input-wrapper">
                             <input type="time" id="input-startTime" class="p-4 font-bold w-full">
                             <div class="input-icon-overlay">
@@ -298,7 +304,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col gap-2">
-                        <span class="section-tag">結束時間</span>
+                        <span class="section-tag">結束時間 <span class="text-xs opacity-60">(加班結束)</span></span>
                         <div class="input-wrapper">
                             <input type="time" id="input-endTime" class="p-4 font-bold w-full">
                             <div class="input-icon-overlay">
@@ -351,15 +357,15 @@
                         </div>
                         <div class="grid grid-cols-3 gap-3">
                             <div>
-                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">早班起點</label>
+                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">早班正常下班</label>
                                 <input type="time" id="cfg-time-morning" class="p-2 w-full text-sm">
                             </div>
                             <div>
-                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">晚班起點</label>
+                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">晚班正常下班</label>
                                 <input type="time" id="cfg-time-evening" class="p-2 w-full text-sm">
                             </div>
                             <div>
-                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">特殊起點</label>
+                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">特殊正常下班</label>
                                 <input type="time" id="cfg-time-special" class="p-2 w-full text-sm">
                             </div>
                         </div>
@@ -436,12 +442,12 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.4.0 [時段模式升級]',
+            VERSION: 'V2.5.0 [跨夜與雙日期支援]',
             FONT_STEPS: [14, 18, 22],
-            DEFAULT_START_TIMES: {
-                morning: '08:00',
-                evening: '17:00',
-                special: '00:00'
+            DEFAULT_OFF_TIMES: {
+                morning: '17:00',
+                evening: '00:00',
+                special: '17:00'
             }
         };
 
@@ -456,14 +462,13 @@
             sheetUrl: localStorage.getItem('sheet_url') || '',
             customReasons: localStorage.getItem('custom_reasons') || CONFIG.DEFAULT_REASONS,
             name: localStorage.getItem('user_name') || '',
-            startTimes: JSON.parse(localStorage.getItem('start_times')) || CONFIG.DEFAULT_START_TIMES
+            normalOffTimes: JSON.parse(localStorage.getItem('normal_off_times')) || CONFIG.DEFAULT_OFF_TIMES
         };
 
         // 取得本地日期 (YYYY-MM-DD)
-        function getLocalDateString() {
-            const now = new Date();
-            const offset = now.getTimezoneOffset();
-            const local = new Date(now.getTime() - (offset * 60 * 1000));
+        function getLocalDateString(d = new Date()) {
+            const offset = d.getTimezoneOffset();
+            const local = new Date(d.getTime() - (offset * 60 * 1000));
             return local.toISOString().split('T')[0];
         }
 
@@ -667,16 +672,13 @@
             document.getElementById('cfg-sheet-url').value = state.sheetUrl;
             document.getElementById('cfg-reasons').value = state.customReasons;
             
-            document.getElementById('cfg-time-morning').value = state.startTimes.morning;
-            document.getElementById('cfg-time-evening').value = state.startTimes.evening;
-            document.getElementById('cfg-time-special').value = state.startTimes.special;
+            document.getElementById('cfg-time-morning').value = state.normalOffTimes.morning;
+            document.getElementById('cfg-time-evening').value = state.normalOffTimes.evening;
+            document.getElementById('cfg-time-special').value = state.normalOffTimes.special;
 
             document.getElementById('version-label').innerText = '版本 ' + CONFIG.VERSION + (isGasEnv ? ' [GAS]' : ' [WEB]');
             
-            // 使用修正後的本地時間邏輯
-            document.getElementById('input-date').value = getLocalDateString();
-            
-            // 自動辨識時段
+            // 自動辨識時段並更新時間與日期
             const autoMode = autoDetectMode();
             setMode(autoMode);
             
@@ -685,23 +687,31 @@
 
         function autoDetectMode() {
             const now = new Date();
-            const currentTimeVal = now.getHours() * 60 + now.getMinutes();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
             const parseTime = (t) => {
+                if (!t) return 0;
                 const [h, m] = t.split(':').map(Number);
                 return h * 60 + m;
             };
 
-            const times = [
-                { mode: 'morning', val: parseTime(state.startTimes.morning) },
-                { mode: 'evening', val: parseTime(state.startTimes.evening) },
-                { mode: 'special', val: parseTime(state.startTimes.special) }
-            ].sort((a, b) => a.val - b.val);
+            const modes = ['morning', 'evening', 'special'];
+            let bestMode = 'morning';
+            let minDiff = Infinity;
 
-            if (currentTimeVal < times[0].val) return times[2].mode;
-            if (currentTimeVal >= times[0].val && currentTimeVal < times[1].val) return times[0].mode;
-            if (currentTimeVal >= times[1].val && currentTimeVal < times[2].val) return times[1].mode;
-            return times[2].mode;
+            modes.forEach(m => {
+                const offTime = parseTime(state.normalOffTimes[m]);
+                // 計算與正常下班時間的差距 (分鐘)，處理跨夜情況
+                let diff = currentMinutes - offTime;
+                if (diff < 0) diff += 24 * 60;
+                
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    bestMode = m;
+                }
+            });
+
+            return bestMode;
         }
 
         function showTab(tab) {
@@ -745,13 +755,36 @@
         }
         function updateTimeByMode(m) {
             const now = new Date();
-            document.getElementById('input-startTime').value = state.startTimes[m] || ""; 
-            document.getElementById('input-endTime').value = now.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
-            // 如果日期欄位是空的，補上今日
-            if(!document.getElementById('input-date').value) {
-                document.getElementById('input-date').value = getLocalDateString();
-            }
+            const startTimeStr = state.normalOffTimes[m] || ""; 
+            const endTimeStr = now.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('input-startTime').value = startTimeStr;
+            document.getElementById('input-endTime').value = endTimeStr;
+            
+            recalculateDates();
         }
+
+        function recalculateDates() {
+            const startTimeStr = document.getElementById('input-startTime').value;
+            const endTimeStr = document.getElementById('input-endTime').value;
+            
+            let endDateStr = document.getElementById('input-endDate').value;
+            let endDate = endDateStr ? new Date(endDateStr) : new Date();
+            let startDate = new Date(endDate);
+            
+            // 跨夜邏輯：如果結束時間(加班結束) 小於 開始時間(正常下班)，代表跨過了午夜
+            if (startTimeStr && endTimeStr && endTimeStr < startTimeStr) {
+                startDate.setDate(startDate.getDate() - 1);
+            }
+            
+            document.getElementById('input-startDate').value = getLocalDateString(startDate);
+            document.getElementById('input-endDate').value = getLocalDateString(endDate);
+        }
+
+        // 綁定時間變更事件，讓使用者手動修改時間時也能自動計算跨夜
+        document.getElementById('input-startTime').addEventListener('change', recalculateDates);
+        document.getElementById('input-endTime').addEventListener('change', recalculateDates);
+        document.getElementById('input-endDate').addEventListener('change', recalculateDates);
 
         function refreshQuickReasons() {
             const select = document.getElementById('quick-reason');
@@ -771,7 +804,7 @@
             state.sheetUrl = document.getElementById('cfg-sheet-url').value.trim();
             state.customReasons = document.getElementById('cfg-reasons').value.trim();
             
-            state.startTimes = {
+            state.normalOffTimes = {
                 morning: document.getElementById('cfg-time-morning').value,
                 evening: document.getElementById('cfg-time-evening').value,
                 special: document.getElementById('cfg-time-special').value
@@ -781,7 +814,7 @@
             localStorage.setItem('gas_url', state.apiUrl); 
             localStorage.setItem('sheet_url', state.sheetUrl);
             localStorage.setItem('custom_reasons', state.customReasons);
-            localStorage.setItem('start_times', JSON.stringify(state.startTimes));
+            localStorage.setItem('normal_off_times', JSON.stringify(state.normalOffTimes));
 
             refreshQuickReasons();
             showResultModal('success', '設定已儲存', '您的個人偏好與連結配置已成功更新。');
@@ -799,7 +832,15 @@
                 return showResultModal('error', '資料不完整', '請填寫登記姓名與事由內容再行發送。');
             }
             setLoading(true);
-            const params = { name: state.name, date: document.getElementById('input-date').value, startTime: document.getElementById('input-startTime').value, endTime: document.getElementById('input-endTime').value, reason: reason };
+            const params = { 
+                name: state.name, 
+                date: document.getElementById('input-startDate').value, // 保留向下相容
+                startDate: document.getElementById('input-startDate').value,
+                endDate: document.getElementById('input-endDate').value,
+                startTime: document.getElementById('input-startTime').value, 
+                endTime: document.getElementById('input-endTime').value, 
+                reason: reason 
+            };
             try {
                 const data = await apiService.call('submit', params);
                 if (data.result === 'success') {
