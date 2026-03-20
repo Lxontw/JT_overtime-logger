@@ -119,6 +119,26 @@
             z-index: 5;
         }
 
+        #mode-morning.active { 
+            --mode-active-bg: #06b6d4; 
+            --mode-active-text: #ffffff;
+            --glow-vibrant: 0 0 25px rgba(6, 182, 212, 0.7);
+        }
+        #mode-evening.active { 
+            --mode-active-bg: #6366f1; 
+            --mode-active-text: #ffffff;
+            --glow-vibrant: 0 0 25px rgba(99, 102, 241, 0.7);
+        }
+        #mode-special.active { 
+            --mode-active-bg: #f97316; 
+            --mode-active-text: #ffffff;
+            --glow-vibrant: 0 0 25px rgba(249, 115, 22, 0.7);
+        }
+
+        #mode-morning.active svg, #mode-evening.active svg, #mode-special.active svg {
+            color: white !important;
+        }
+
         .font-scaler-btn, .skin-dot, .gear-btn, .close-btn {
             width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--text);
             display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -198,6 +218,7 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body class="min-h-screen flex justify-center items-center p-6">
     <canvas id="bg-canvas"></canvas>
@@ -251,9 +272,18 @@
                 <div class="flex flex-col gap-2">
                     <span class="section-tag">登記時段模式</span>
                     <div class="grid grid-cols-3 gap-3">
-                        <button onclick="setMode('regular')" id="mode-regular" class="mode-btn p-3 rounded-xl active text-sm">下班登記</button>
-                        <button onclick="setMode('overtime')" id="mode-overtime" class="mode-btn p-3 rounded-xl text-sm">加班登記</button>
-                        <button onclick="setMode('special')" id="mode-special" class="mode-btn p-3 rounded-xl text-sm">全日/假日</button>
+                        <button onclick="setMode('morning')" id="mode-morning" class="mode-btn p-3 rounded-xl flex flex-col items-center gap-1 text-xs">
+                            <svg class="text-cyan-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                            早班模式
+                        </button>
+                        <button onclick="setMode('evening')" id="mode-evening" class="mode-btn p-3 rounded-xl flex flex-col items-center gap-1 text-xs">
+                            <svg class="text-indigo-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                            晚班模式
+                        </button>
+                        <button onclick="setMode('special')" id="mode-special" class="mode-btn p-3 rounded-xl flex flex-col items-center gap-1 text-xs">
+                            <svg class="text-orange-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            特殊加班
+                        </button>
                     </div>
                 </div>
 
@@ -317,7 +347,21 @@
                         </div>
                         <div>
                             <label class="text-xs font-black opacity-60 uppercase mb-1 block">自定義快速事由 (逗號分隔)</label>
-                            <textarea id="cfg-reasons" rows="4" class="p-4 w-full" placeholder="選項1, 選項2..."></textarea>
+                            <textarea id="cfg-reasons" rows="3" class="p-4 w-full" placeholder="選項1, 選項2..."></textarea>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">早班起點</label>
+                                <input type="time" id="cfg-time-morning" class="p-2 w-full text-sm">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">晚班起點</label>
+                                <input type="time" id="cfg-time-evening" class="p-2 w-full text-sm">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">特殊起點</label>
+                                <input type="time" id="cfg-time-special" class="p-2 w-full text-sm">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -392,8 +436,13 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.3.11 [本地日期邏輯修正]',
-            FONT_STEPS: [14, 18, 22]
+            VERSION: 'V2.4.0 [時段模式升級]',
+            FONT_STEPS: [14, 18, 22],
+            DEFAULT_START_TIMES: {
+                morning: '08:00',
+                evening: '17:00',
+                special: '00:00'
+            }
         };
 
         const isGasEnv = typeof google !== 'undefined' && google.script && google.script.run;
@@ -402,11 +451,12 @@
             activeTab: 'home',
             theme: localStorage.getItem('theme') || 'poryphone',
             fontSize: parseInt(localStorage.getItem('base_font_size')) || 18,
-            mode: 'regular',
+            mode: 'morning',
             apiUrl: localStorage.getItem('gas_url') || CONFIG.GAS_URL,
             sheetUrl: localStorage.getItem('sheet_url') || '',
             customReasons: localStorage.getItem('custom_reasons') || CONFIG.DEFAULT_REASONS,
-            name: localStorage.getItem('user_name') || ''
+            name: localStorage.getItem('user_name') || '',
+            startTimes: JSON.parse(localStorage.getItem('start_times')) || CONFIG.DEFAULT_START_TIMES
         };
 
         // 取得本地日期 (YYYY-MM-DD)
@@ -616,14 +666,43 @@
             document.getElementById('cfg-url').value = state.apiUrl;
             document.getElementById('cfg-sheet-url').value = state.sheetUrl;
             document.getElementById('cfg-reasons').value = state.customReasons;
+            
+            document.getElementById('cfg-time-morning').value = state.startTimes.morning;
+            document.getElementById('cfg-time-evening').value = state.startTimes.evening;
+            document.getElementById('cfg-time-special').value = state.startTimes.special;
+
             document.getElementById('version-label').innerText = '版本 ' + CONFIG.VERSION + (isGasEnv ? ' [GAS]' : ' [WEB]');
             
             // 使用修正後的本地時間邏輯
             document.getElementById('input-date').value = getLocalDateString();
-            updateTimeByMode('regular');
+            
+            // 自動辨識時段
+            const autoMode = autoDetectMode();
+            setMode(autoMode);
             
             refreshQuickReasons();
         };
+
+        function autoDetectMode() {
+            const now = new Date();
+            const currentTimeVal = now.getHours() * 60 + now.getMinutes();
+
+            const parseTime = (t) => {
+                const [h, m] = t.split(':').map(Number);
+                return h * 60 + m;
+            };
+
+            const times = [
+                { mode: 'morning', val: parseTime(state.startTimes.morning) },
+                { mode: 'evening', val: parseTime(state.startTimes.evening) },
+                { mode: 'special', val: parseTime(state.startTimes.special) }
+            ].sort((a, b) => a.val - b.val);
+
+            if (currentTimeVal < times[0].val) return times[2].mode;
+            if (currentTimeVal >= times[0].val && currentTimeVal < times[1].val) return times[0].mode;
+            if (currentTimeVal >= times[1].val && currentTimeVal < times[2].val) return times[1].mode;
+            return times[2].mode;
+        }
 
         function showTab(tab) {
             state.activeTab = tab;
@@ -666,7 +745,7 @@
         }
         function updateTimeByMode(m) {
             const now = new Date();
-            document.getElementById('input-startTime').value = ""; 
+            document.getElementById('input-startTime').value = state.startTimes[m] || ""; 
             document.getElementById('input-endTime').value = now.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
             // 如果日期欄位是空的，補上今日
             if(!document.getElementById('input-date').value) {
@@ -691,10 +770,19 @@
             state.apiUrl = document.getElementById('cfg-url').value.trim();
             state.sheetUrl = document.getElementById('cfg-sheet-url').value.trim();
             state.customReasons = document.getElementById('cfg-reasons').value.trim();
+            
+            state.startTimes = {
+                morning: document.getElementById('cfg-time-morning').value,
+                evening: document.getElementById('cfg-time-evening').value,
+                special: document.getElementById('cfg-time-special').value
+            };
+
             localStorage.setItem('user_name', state.name); 
             localStorage.setItem('gas_url', state.apiUrl); 
             localStorage.setItem('sheet_url', state.sheetUrl);
             localStorage.setItem('custom_reasons', state.customReasons);
+            localStorage.setItem('start_times', JSON.stringify(state.startTimes));
+
             refreshQuickReasons();
             showResultModal('success', '設定已儲存', '您的個人偏好與連結配置已成功更新。');
             showTab('home');
@@ -756,5 +844,6 @@
             window.onresize = resize; resize(); animate(0);
         }
     </script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
