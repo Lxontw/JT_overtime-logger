@@ -10,58 +10,76 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* =========================================
-           系統配置與主題變數
-           ========================================= */
         :root {
             --base-font-size: 18px;
-            --global-radius: 16px;
-            --global-btn-clip: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            --global-radius: 22px;
             --warning-red: #ef4444;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         [data-theme="poryphone"] {
-            --bg: linear-gradient(180deg, #57d5e5 0%, #1a8a99 100%);
-            --text: #ffffff;
-            --input-bg: rgba(255, 255, 255, 0.22);
-            --input-border: rgba(255, 255, 255, 0.45);
-            --accent: #00f2ff;
-            --btn-primary: linear-gradient(135deg, #4edeea, #26a9b8);
-            --btn-shadow: rgba(0, 0, 0, 0.2);
-            --mode-active-bg: #ffffff;
-            --mode-active-text: #1a8a99;
-            --placeholder-color: rgba(255, 255, 255, 0.95);
-            --glow-vibrant: 0 0 25px rgba(0, 242, 255, 0.8), inset 0 0 10px rgba(255,255,255,0.5);
+            --bg: radial-gradient(circle at top, rgba(34, 211, 238, 0.28), transparent 30%), linear-gradient(145deg, #031a1e 0%, #0a5660 45%, #042c31 100%);
+            --surface: rgba(5, 28, 33, 0.72);
+            --surface-strong: rgba(10, 44, 49, 0.9);
+            --surface-soft: rgba(255, 255, 255, 0.08);
+            --text: #f2fdff;
+            --text-muted: rgba(242, 253, 255, 0.66);
+            --input-bg: rgba(255, 255, 255, 0.08);
+            --input-border: rgba(133, 239, 255, 0.28);
+            --accent: #5ce1e6;
+            --accent-strong: #00f2ff;
+            --btn-primary: linear-gradient(135deg, #42e8ee, #0ea5b7);
+            --btn-shadow: rgba(6, 95, 107, 0.48);
+            --mode-active-bg: linear-gradient(135deg, rgba(92, 225, 230, 0.95), rgba(0, 242, 255, 0.82));
+            --mode-active-text: #032a2f;
+            --placeholder-color: rgba(242, 253, 255, 0.58);
+            --panel-border: rgba(123, 238, 255, 0.18);
+            --ring: 0 0 0 1px rgba(126, 239, 255, 0.22), 0 30px 60px rgba(0, 0, 0, 0.28);
         }
 
         [data-theme="light"] {
-            --bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            --text: #1e293b;
+            --bg: radial-gradient(circle at top, rgba(79, 70, 229, 0.12), transparent 26%), linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            --surface: rgba(255, 255, 255, 0.86);
+            --surface-strong: rgba(255, 255, 255, 0.96);
+            --surface-soft: rgba(99, 102, 241, 0.05);
+            --text: #172033;
+            --text-muted: #64748b;
             --input-bg: #ffffff;
-            --input-border: #cbd5e1;
-            --accent: #6366f1;
-            --btn-primary: linear-gradient(135deg, #6366f1, #4f46e5);
-            --btn-shadow: rgba(79, 70, 229, 0.2);
-            --mode-active-bg: #6366f1;
+            --input-border: rgba(99, 102, 241, 0.16);
+            --accent: #4f46e5;
+            --accent-strong: #312e81;
+            --btn-primary: linear-gradient(135deg, #4f46e5, #312e81);
+            --btn-shadow: rgba(79, 70, 229, 0.28);
+            --mode-active-bg: linear-gradient(135deg, #4f46e5, #312e81);
             --mode-active-text: #ffffff;
-            --placeholder-color: #334155;
-            --glow-vibrant: 0 10px 25px rgba(99, 102, 241, 0.4);
+            --placeholder-color: #94a3b8;
+            --panel-border: rgba(148, 163, 184, 0.26);
+            --ring: 0 0 0 1px rgba(148, 163, 184, 0.2), 0 30px 60px rgba(15, 23, 42, 0.1);
         }
 
         [data-theme="dark"] {
-            --bg: linear-gradient(180deg, #0f172a 0%, #020617 100%);
-            --text: #ffffff;
-            --input-bg: rgba(30, 41, 59, 0.8);
-            --input-border: rgba(255, 255, 255, 0.1);
+            --bg: radial-gradient(circle at top, rgba(245, 158, 11, 0.12), transparent 25%), linear-gradient(180deg, #04070d 0%, #0f172a 100%);
+            --surface: rgba(10, 14, 24, 0.82);
+            --surface-strong: rgba(15, 23, 42, 0.92);
+            --surface-soft: rgba(255, 255, 255, 0.04);
+            --text: #f8fafc;
+            --text-muted: rgba(248, 250, 252, 0.64);
+            --input-bg: rgba(15, 23, 42, 0.9);
+            --input-border: rgba(245, 158, 11, 0.14);
             --accent: #f59e0b;
-            --btn-primary: linear-gradient(135deg, #f59e0b, #d97706);
-            --btn-shadow: rgba(0, 0, 0, 0.4);
-            --mode-active-bg: #f59e0b;
-            --mode-active-text: #020617;
-            --placeholder-color: rgba(255, 255, 255, 0.7);
-            --glow-vibrant: 0 0 25px rgba(245, 158, 11, 0.6);
+            --accent-strong: #fbbf24;
+            --btn-primary: linear-gradient(135deg, #f59e0b, #b45309);
+            --btn-shadow: rgba(0, 0, 0, 0.5);
+            --mode-active-bg: linear-gradient(135deg, #f59e0b, #b45309);
+            --mode-active-text: #111827;
+            --placeholder-color: rgba(248, 250, 252, 0.44);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --ring: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 30px 60px rgba(0, 0, 0, 0.45);
         }
+
+        * { box-sizing: border-box; }
+
+        html, body { min-height: 100%; }
 
         body {
             font-family: 'Inter', 'PingFang TC', sans-serif;
@@ -70,92 +88,337 @@
             color: var(--text);
             font-size: var(--base-font-size);
             transition: var(--transition);
+            margin: 0;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            z-index: -2;
+            border-radius: 999px;
+            filter: blur(32px);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        body::before {
+            width: 320px;
+            height: 320px;
+            top: -100px;
+            right: -80px;
+            background: color-mix(in srgb, var(--accent) 38%, transparent);
+        }
+
+        body::after {
+            width: 260px;
+            height: 260px;
+            bottom: -80px;
+            left: -80px;
+            background: color-mix(in srgb, var(--accent-strong) 22%, transparent);
         }
 
         input[type="time"]::-webkit-calendar-picker-indicator { display: none !important; }
-
-        .input-wrapper { position: relative; width: 100%; }
-        .input-icon-overlay {
-            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-            pointer-events: none; opacity: 0.8; display: flex; align-items: center;
-        }
-
-        [data-theme="poryphone"] .brand-title,
-        [data-theme="poryphone"] .section-tag { text-shadow: 0 0 15px rgba(0, 242, 255, 0.6); }
-
-        .btn-action {
-            clip-path: var(--global-btn-clip);
-            background: var(--btn-primary);
-            box-shadow: 0 8px 0 var(--btn-shadow);
-            transition: 0.2s;
-            color: white;
-        }
-        .btn-action:active { transform: translateY(4px); box-shadow: 0 4px 0 var(--btn-shadow); }
-        .btn-danger {
-            background: var(--warning-red) !important;
-            box-shadow: 0 8px 0 rgba(185, 28, 28, 0.4) !important;
-        }
+        input::placeholder, textarea::placeholder { color: var(--placeholder-color); }
 
         input, select, textarea {
+            width: 100%;
             background: var(--input-bg);
-            border: 2.5px solid var(--input-border);
-            border-radius: var(--global-radius);
+            border: 1px solid var(--input-border);
+            border-radius: 18px;
             color: var(--text);
             outline: none;
-        }
-
-        .mode-btn {
-            background: var(--input-bg);
-            border: 2.5px solid var(--input-border);
             transition: var(--transition);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: color-mix(in srgb, var(--accent) 45%, white);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+        }
+
+        .app-shell {
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-frame {
+            width: min(100%, 960px);
+            display: grid;
+            gap: 24px;
+        }
+
+        .hero-panel,
+        .content-panel,
+        .settings-panel,
+        .panel-block {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--panel-border);
+            border-radius: 30px;
+            box-shadow: var(--ring);
+        }
+
+        .hero-panel {
+            overflow: hidden;
+            padding: 24px;
+        }
+
+        .hero-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(130deg, color-mix(in srgb, var(--accent) 20%, transparent), transparent 45%),
+                linear-gradient(0deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+            pointer-events: none;
+        }
+
+        .hero-grid {
+            position: relative;
+            display: grid;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .hero-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .hero-badge {
+            align-self: flex-start;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+            color: var(--text);
+            font-size: 0.72rem;
             font-weight: 800;
-        }
-        .mode-btn.active {
-            background: var(--mode-active-bg) !important;
-            color: var(--mode-active-text) !important;
-            border-color: #ffffff;
-            box-shadow: var(--glow-vibrant);
-            transform: translateY(-2px) scale(1.03);
-            z-index: 5;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
         }
 
-        #mode-morning.active { 
-            --mode-active-bg: #06b6d4; 
-            --mode-active-text: #ffffff;
-            --glow-vibrant: 0 0 25px rgba(6, 182, 212, 0.7);
-        }
-        #mode-evening.active { 
-            --mode-active-bg: #6366f1; 
-            --mode-active-text: #ffffff;
-            --glow-vibrant: 0 0 25px rgba(99, 102, 241, 0.7);
-        }
-        #mode-special.active { 
-            --mode-active-bg: #f97316; 
-            --mode-active-text: #ffffff;
-            --glow-vibrant: 0 0 25px rgba(249, 115, 22, 0.7);
+        .brand-title {
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 3.3rem);
+            font-weight: 900;
+            line-height: 0.98;
+            letter-spacing: -0.05em;
         }
 
-        #mode-morning.active svg, #mode-evening.active svg, #mode-special.active svg {
-            color: white !important;
+        .hero-note {
+            margin: 0;
+            max-width: 32rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.98rem;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .toolbar-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
         }
 
         .font-scaler-btn, .skin-dot, .gear-btn, .close-btn {
-            width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--text);
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: var(--transition); font-weight: 900;
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            border: 1px solid var(--input-border);
+            background: var(--surface-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 900;
+            color: var(--text);
+        }
+
+        .font-scaler-btn:hover, .skin-dot:hover, .gear-btn:hover, .close-btn:hover {
+            transform: translateY(-2px);
+            border-color: color-mix(in srgb, var(--accent) 35%, white);
+        }
+
+        .skin-dot.active {
+            background: var(--btn-primary);
+            color: #fff;
+            box-shadow: 0 14px 28px var(--btn-shadow);
+            border-color: transparent;
         }
 
         .close-btn {
             background-color: var(--warning-red) !important;
             color: white !important;
-            border-color: white !important;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+            border-color: transparent !important;
+            box-shadow: 0 18px 28px rgba(239, 68, 68, 0.3);
         }
 
-        .section-tag { border-left: 6px solid var(--accent); padding-left: 12px; font-weight: 900; }
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
+        .content-panel,
+        .settings-panel {
+            padding: 24px;
+        }
 
-        /* 裁切介面樣式 */
+        .panel-stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .panel-block {
+            padding: 20px;
+            background: var(--surface-strong);
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+            font-size: 0.96rem;
+        }
+
+        .section-tag::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 56%, transparent);
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .field-card {
+            padding: 16px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--surface-soft) 100%, transparent), transparent);
+            border: 1px solid var(--input-border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .field-card label,
+        .field-card .label-text {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .field-card .helper {
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            line-height: 1.5;
+        }
+
+        .input-wrapper { position: relative; width: 100%; }
+        .input-icon-overlay {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+        }
+
+        .mode-grid {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .mode-btn {
+            min-height: 108px;
+            padding: 16px 12px;
+            border-radius: 22px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            transition: var(--transition);
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .mode-btn.active {
+            background: var(--mode-active-bg) !important;
+            color: var(--mode-active-text) !important;
+            border-color: transparent;
+            box-shadow: 0 18px 30px var(--btn-shadow);
+            transform: translateY(-3px);
+        }
+
+        #mode-morning.active svg, #mode-evening.active svg, #mode-special.active svg {
+            color: currentColor !important;
+        }
+
+        .theme-dynamic-bg {
+            border: 0;
+            transition: var(--transition);
+        }
+
+        .btn-action {
+            width: 100%;
+            border: 0;
+            border-radius: 20px;
+            background: var(--btn-primary);
+            box-shadow: 0 18px 32px var(--btn-shadow);
+            transition: 0.2s;
+            color: white;
+            letter-spacing: 0.02em;
+        }
+
+        .btn-action:hover { transform: translateY(-2px); }
+        .btn-action:active { transform: translateY(1px) scale(0.995); }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+            box-shadow: 0 18px 32px rgba(127, 29, 29, 0.3) !important;
+        }
+
+        .submit-wrap {
+            position: sticky;
+            bottom: 18px;
+            z-index: 20;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
         #cropper-modal {
             position: fixed; inset: 0; background: #000; z-index: 1000;
             display: none; flex-direction: column;
@@ -178,7 +441,6 @@
         .modal-overlay {
             position: fixed; inset: 0; z-index: 5000;
             background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: center;
             padding: 24px; opacity: 0; pointer-events: none;
             transition: opacity 0.3s ease-out;
@@ -209,6 +471,20 @@
         .modal-btn:active { transform: scale(0.95); }
 
         .hidden { display: none !important; }
+
+        @media (min-width: 900px) {
+            .hero-grid {
+                grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.9fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 18px; }
+            .hero-panel, .content-panel, .settings-panel { padding: 18px; }
+            .panel-block { padding: 16px; }
+            .info-grid, .mode-grid { grid-template-columns: 1fr; }
+            .submit-wrap { bottom: 8px; }
+        }
     </style>
 <script type="importmap">
 {
@@ -220,164 +496,189 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="min-h-screen flex justify-center items-center p-6">
+<body class="min-h-screen p-4 md:p-6">
     <canvas id="bg-canvas"></canvas>
 
-    <div class="w-full max-w-md z-10 flex flex-col gap-6">
-        <!-- Header -->
-        <header class="flex flex-col gap-5">
-            <div class="flex justify-between items-center h-14">
-                
-                <!-- 左側按鈕群組：字體大小與預覽 -->
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleFontSize()" class="font-scaler-btn shadow-sm">
-                        <span class="text-xl serif leading-none">Aa</span>
-                    </button>
-                    <button onclick="openPreview()" class="font-scaler-btn shadow-sm" title="預覽試算表">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </button>
-                </div>
-
-                <!-- 右側按鈕群組：主題切換與設定 -->
-                <div class="flex items-center gap-3">
-                    <div id="theme-selector" class="flex gap-2">
-                        <button onclick="setTheme('poryphone')" class="skin-dot" id="theme-p">P</button>
-                        <button onclick="setTheme('light')" class="skin-dot" id="theme-l">L</button>
-                        <button onclick="setTheme('dark')" class="skin-dot" id="theme-d">D</button>
+    <div class="app-shell">
+        <div class="app-frame z-10">
+            <header class="hero-panel">
+                <div class="hero-grid">
+                    <div class="hero-copy">
+                        <span class="hero-badge">Overtime Console</span>
+                        <h1 id="page-title" class="brand-title">無盡火域：神魄登記</h1>
+                        <p class="hero-note">保留原有登記流程、試算表串接與 OCR 入口，重新整理為更清楚的卡片式操作介面，讓日期、模式與發送流程更容易掃視。</p>
                     </div>
-
-                    <div id="header-toggle-area" class="relative w-11 h-11">
-                        <button id="btn-to-settings" onclick="showTab('settings')" class="gear-btn absolute inset-0">
-                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                            </svg>
-                        </button>
-                        <button id="btn-to-home" onclick="showTab('home')" class="close-btn absolute inset-0 hidden">
-                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <h1 id="page-title" class="text-3xl font-black italic tracking-tighter brand-title">無盡火域：神魄登記</h1>
-        </header>
-
-        <main>
-            <div id="tab-home" class="flex flex-col gap-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-2">
-                        <span class="section-tag">開始日期 <span class="text-xs opacity-60">(上班日)</span></span>
-                        <input type="date" id="input-startDate" class="p-4 font-bold w-full">
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <span class="section-tag">結束日期 <span class="text-xs opacity-60">(下班日)</span></span>
-                        <input type="date" id="input-endDate" class="p-4 font-bold w-full">
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <span class="section-tag">登記時段模式</span>
-                    <div class="grid grid-cols-3 gap-3">
-                        <button onclick="setMode('morning')" id="mode-morning" class="mode-btn p-3 rounded-xl flex flex-col items-center gap-1 text-xs">
-                            <svg class="text-cyan-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                            早班模式
-                        </button>
-                        <button onclick="setMode('evening')" id="mode-evening" class="mode-btn p-3 rounded-xl flex flex-col items-center gap-1 text-xs">
-                            <svg class="text-indigo-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                            晚班模式
-                        </button>
-                        <button onclick="setMode('special')" id="mode-special" class="mode-btn p-3 rounded-xl flex flex-col items-center gap-1 text-xs">
-                            <svg class="text-orange-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            特殊加班
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-2">
-                        <span class="section-tag">開始時間 <span class="text-xs opacity-60">(正常下班)</span></span>
-                        <div class="input-wrapper">
-                            <input type="time" id="input-startTime" class="p-4 font-bold w-full">
-                            <div class="input-icon-overlay">
-                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            </div>
+                    <div class="toolbar">
+                        <div class="toolbar-group">
+                            <button onclick="toggleFontSize()" class="font-scaler-btn" title="切換字體大小">
+                                <span class="text-xl serif leading-none">Aa</span>
+                            </button>
+                            <button onclick="openPreview()" class="font-scaler-btn" title="預覽試算表">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
                         </div>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <span class="section-tag">結束時間 <span class="text-xs opacity-60">(加班結束)</span></span>
-                        <div class="input-wrapper">
-                            <input type="time" id="input-endTime" class="p-4 font-bold w-full">
-                            <div class="input-icon-overlay">
-                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <div class="toolbar-group">
+                            <div id="theme-selector" class="toolbar-group">
+                                <button onclick="setTheme('poryphone')" class="skin-dot" id="theme-p">P</button>
+                                <button onclick="setTheme('light')" class="skin-dot" id="theme-l">L</button>
+                                <button onclick="setTheme('dark')" class="skin-dot" id="theme-d">D</button>
+                            </div>
+                            <div id="header-toggle-area" class="relative w-[46px] h-[46px]">
+                                <button id="btn-to-settings" onclick="showTab('settings')" class="gear-btn absolute inset-0">
+                                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                    </svg>
+                                </button>
+                                <button id="btn-to-home" onclick="showTab('home')" class="close-btn absolute inset-0 hidden">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
+            </header>
 
-                <div class="flex flex-col gap-2">
-                    <div class="flex justify-between items-center h-12">
-                        <span class="section-tag">事由 / 備註內容</span>
-                        <!-- 相機 OCR 按鈕 -->
-                        <button onclick="document.getElementById('file-ocr').click()" class="w-11 h-11 rounded-xl text-white flex items-center justify-center shadow-lg theme-dynamic-bg" title="影像文字辨識">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                        </button>
+            <main>
+                <div id="tab-home" class="content-panel">
+                    <div class="panel-stack">
+                        <section class="panel-block">
+                            <div class="section-head">
+                                <span class="section-tag">日期區間</span>
+                            </div>
+                            <div class="info-grid">
+                                <div class="field-card">
+                                    <span class="label-text">開始日期 <span class="helper">(上班日)</span></span>
+                                    <input type="date" id="input-startDate" class="p-4 font-bold">
+                                </div>
+                                <div class="field-card">
+                                    <span class="label-text">結束日期 <span class="helper">(下班日)</span></span>
+                                    <input type="date" id="input-endDate" class="p-4 font-bold">
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="panel-block">
+                            <div class="section-head">
+                                <span class="section-tag">登記時段模式</span>
+                            </div>
+                            <div class="mode-grid">
+                                <button onclick="setMode('morning')" id="mode-morning" class="mode-btn flex flex-col items-center justify-center gap-2 text-sm">
+                                    <svg class="text-cyan-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                                    早班模式
+                                </button>
+                                <button onclick="setMode('evening')" id="mode-evening" class="mode-btn flex flex-col items-center justify-center gap-2 text-sm">
+                                    <svg class="text-indigo-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                                    晚班模式
+                                </button>
+                                <button onclick="setMode('special')" id="mode-special" class="mode-btn flex flex-col items-center justify-center gap-2 text-sm">
+                                    <svg class="text-orange-400" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    特殊加班
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="panel-block">
+                            <div class="section-head">
+                                <span class="section-tag">時間配置</span>
+                            </div>
+                            <div class="info-grid">
+                                <div class="field-card">
+                                    <span class="label-text">開始時間 <span class="helper">(正常下班)</span></span>
+                                    <div class="input-wrapper">
+                                        <input type="time" id="input-startTime" class="p-4 font-bold">
+                                        <div class="input-icon-overlay">
+                                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field-card">
+                                    <span class="label-text">結束時間 <span class="helper">(加班結束)</span></span>
+                                    <div class="input-wrapper">
+                                        <input type="time" id="input-endTime" class="p-4 font-bold">
+                                        <div class="input-icon-overlay">
+                                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="panel-block">
+                            <div class="section-head">
+                                <span class="section-tag">事由 / 備註內容</span>
+                                <button onclick="document.getElementById('file-ocr').click()" class="w-11 h-11 rounded-2xl text-white flex items-center justify-center shadow-lg theme-dynamic-bg" title="影像文字辨識">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                </button>
+                            </div>
+                            <div class="grid gap-3">
+                                <select id="quick-reason" class="p-4 font-bold" onchange="applyQuickReason()">
+                                    <option value="" disabled selected>-- 快速事由選擇 --</option>
+                                </select>
+                                <textarea id="input-reason" rows="4" class="p-4 font-bold" placeholder="請輸入詳細內容..."></textarea>
+                                <input type="file" id="file-ocr" class="hidden" accept="image/*" capture="environment" onchange="handleOCR(this)">
+                            </div>
+                        </section>
+
+                        <div class="submit-wrap">
+                            <button onclick="submitData()" id="submit-btn" class="btn-action py-6 text-xl font-black flex items-center justify-center gap-3">
+                                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                確認發送雲端
+                            </button>
+                        </div>
                     </div>
-                    <select id="quick-reason" class="p-4 font-bold mb-2" onchange="applyQuickReason()">
-                        <option value="" disabled selected>-- 快速事由選擇 --</option>
-                    </select>
-                    <textarea id="input-reason" rows="3" class="p-4 font-bold" placeholder="請輸入詳細內容..."></textarea>
-                    <input type="file" id="file-ocr" class="hidden" accept="image/*" capture="environment" onchange="handleOCR(this)">
                 </div>
 
-                <button onclick="submitData()" id="submit-btn" class="btn-action w-full py-6 text-xl font-black flex items-center justify-center gap-3">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                    確認發送雲端
-                </button>
-            </div>
-
-            <div id="tab-settings" class="flex flex-col gap-6 hidden">
-                <div class="flex flex-col gap-4">
-                    <span class="section-tag">系統參數配置</span>
-                    <div class="flex flex-col gap-4 p-2">
-                        <div>
-                            <label class="text-xs font-black opacity-60 uppercase mb-1 block">預設登記姓名</label>
-                            <input type="text" id="cfg-name" class="p-4 w-full" placeholder="您的姓名">
-                        </div>
-                        <div>
-                            <label class="text-xs font-black opacity-60 uppercase mb-1 block">GAS 服務 URL</label>
-                            <input type="text" id="cfg-url" class="p-4 w-full" placeholder="https://script.google.com/...">
-                        </div>
-                        <div>
-                            <label class="text-xs font-black opacity-60 uppercase mb-1 block">Google Sheet 預覽網址 <span class="text-[10px] font-normal lowercase">(推薦填寫共用連結)</span></label>
-                            <input type="text" id="cfg-sheet-url" class="p-4 w-full" placeholder="https://docs.google.com/spreadsheets/d/...">
-                        </div>
-                        <div>
-                            <label class="text-xs font-black opacity-60 uppercase mb-1 block">自定義快速事由 (逗號分隔)</label>
-                            <textarea id="cfg-reasons" rows="3" class="p-4 w-full" placeholder="選項1, 選項2..."></textarea>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3">
-                            <div>
-                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">早班正常下班</label>
-                                <input type="time" id="cfg-time-morning" class="p-2 w-full text-sm">
+                <div id="tab-settings" class="settings-panel hidden">
+                    <div class="panel-stack">
+                        <section class="panel-block">
+                            <div class="section-head">
+                                <span class="section-tag">系統參數配置</span>
                             </div>
-                            <div>
-                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">晚班正常下班</label>
-                                <input type="time" id="cfg-time-evening" class="p-2 w-full text-sm">
+                            <div class="grid gap-4">
+                                <div class="field-card">
+                                    <label for="cfg-name">預設登記姓名</label>
+                                    <input type="text" id="cfg-name" class="p-4" placeholder="您的姓名">
+                                </div>
+                                <div class="field-card">
+                                    <label for="cfg-url">GAS 服務 URL</label>
+                                    <input type="text" id="cfg-url" class="p-4" placeholder="https://script.google.com/...">
+                                </div>
+                                <div class="field-card">
+                                    <label for="cfg-sheet-url">Google Sheet 預覽網址 <span class="helper">(推薦填寫共用連結)</span></label>
+                                    <input type="text" id="cfg-sheet-url" class="p-4" placeholder="https://docs.google.com/spreadsheets/d/...">
+                                </div>
+                                <div class="field-card">
+                                    <label for="cfg-reasons">自定義快速事由 (逗號分隔)</label>
+                                    <textarea id="cfg-reasons" rows="3" class="p-4" placeholder="選項1, 選項2..."></textarea>
+                                </div>
+                                <div class="info-grid">
+                                    <div class="field-card">
+                                        <label for="cfg-time-morning">早班正常下班</label>
+                                        <input type="time" id="cfg-time-morning" class="p-3 text-sm">
+                                    </div>
+                                    <div class="field-card">
+                                        <label for="cfg-time-evening">晚班正常下班</label>
+                                        <input type="time" id="cfg-time-evening" class="p-3 text-sm">
+                                    </div>
+                                    <div class="field-card">
+                                        <label for="cfg-time-special">特殊正常下班</label>
+                                        <input type="time" id="cfg-time-special" class="p-3 text-sm">
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-[10px] font-black opacity-60 uppercase mb-1 block">特殊正常下班</label>
-                                <input type="time" id="cfg-time-special" class="p-2 w-full text-sm">
+                        </section>
+                        <section class="panel-block">
+                            <div class="grid gap-3">
+                                <button onclick="saveSettings()" class="btn-action py-5 font-black">儲存設定並返回</button>
+                                <button onclick="confirmReset()" class="btn-action btn-danger py-5 font-black">重製雲端試算表範本</button>
                             </div>
-                        </div>
+                            <div id="version-label" class="text-center opacity-50 text-xs mt-5">版本載入中...</div>
+                        </section>
                     </div>
                 </div>
-                <div class="flex flex-col gap-3">
-                    <button onclick="saveSettings()" class="btn-action w-full py-5 font-black">儲存設定並返回</button>
-                    <button onclick="confirmReset()" class="btn-action btn-danger w-full py-5 font-black mt-2">重製雲端試算表範本</button>
-                </div>
-                <div id="version-label" class="text-center opacity-40 text-xs mt-4">版本載入中...</div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <!-- 裁切 Modal -->
@@ -887,21 +1188,13 @@
 
         function initBackground() {
             const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
-            let dots = [];
             function resize() {
-                canvas.width = window.innerWidth; canvas.height = window.innerHeight; dots = [];
-                for(let x=0; x<canvas.width+30; x+=30) for(let y=0; y<canvas.height+30; y+=30) dots.push({ x, y, phase: Math.random()*Math.PI*2 });
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
-            function animate(time) {
-                ctx.clearRect(0,0, canvas.width, canvas.height); 
-                ctx.fillStyle = state.theme === 'poryphone' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
-                dots.forEach(d => {
-                    const mod = Math.sin(time/1000 + d.phase);
-                    if (mod > 0.8) { ctx.globalAlpha = (mod - 0.8) * 5; ctx.beginPath(); ctx.arc(d.x, d.y, 1.5, 0, Math.PI*2); ctx.fill(); }
-                });
-                requestAnimationFrame(animate);
-            }
-            window.onresize = resize; resize(); animate(0);
+            window.onresize = resize;
+            resize();
         }
     </script>
 <script type="module" src="/index.tsx"></script>
