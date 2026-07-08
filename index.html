@@ -1073,7 +1073,64 @@
             recalculateDates();
         }
 
+        // ----------------------------------------------------
+        // [V2.10] 加班時數自動對齊邏輯 (Align End Time)
+        // 規則：實際加班分鐘數
+        //  - 20 分鐘(含)以上，未滿 50 分鐘 -> 對齊為 30 分鐘 (0.5 小時)
+        //  - 50 分鐘(含)以上 -> 對齊為下一個整點 (1.0 小時)
+        //  - 未滿 20 分鐘 -> 對齊為 0 分鐘 (不計加班費)
+        // ----------------------------------------------------
+        function getAlignedEndTime(startTimeStr, endTimeStr) {
+            if (!startTimeStr || !endTimeStr) return endTimeStr;
+            
+            const [startH, startM] = startTimeStr.split(':').map(Number);
+            const [endH, endM] = endTimeStr.split(':').map(Number);
+            
+            const startMin = startH * 60 + startM;
+            let endMin = endH * 60 + endM;
+            
+            // 處理跨日情況 (例如開始 23:00，結束 01:15)
+            if (endMin < startMin) {
+                endMin += 1440;
+            }
+            
+            const diff = endMin - startMin;
+            if (diff <= 0) return endTimeStr;
+            
+            const hours = Math.floor(diff / 60);
+            const minutes = diff % 60;
+            let alignedDiff = 0;
+            
+            if (minutes >= 50) {
+                alignedDiff = (hours + 1) * 60;
+            } else if (minutes >= 20) {
+                alignedDiff = hours * 60 + 30;
+            } else {
+                alignedDiff = hours * 60;
+            }
+            
+            const alignedEndMin = (startMin + alignedDiff) % 1440;
+            const alignedH = String(Math.floor(alignedEndMin / 60)).padStart(2, '0');
+            const alignedM = String(alignedEndMin % 60).padStart(2, '0');
+            
+            return `${alignedH}:${alignedM}`;
+        }
+
+        function alignInputEndTime() {
+            const startTimeStr = document.getElementById('input-startTime').value;
+            const endTimeStr = document.getElementById('input-endTime').value;
+            if (!startTimeStr || !endTimeStr) return;
+            
+            const alignedTime = getAlignedEndTime(startTimeStr, endTimeStr);
+            if (alignedTime !== endTimeStr) {
+                document.getElementById('input-endTime').value = alignedTime;
+            }
+        }
+
         function recalculateDates() {
+            // 在計算日期前，先自動對齊結束時間
+            alignInputEndTime();
+
             const startTimeStr = document.getElementById('input-startTime').value;
             const endTimeStr = document.getElementById('input-endTime').value;
             
