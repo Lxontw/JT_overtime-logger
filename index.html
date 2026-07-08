@@ -542,6 +542,9 @@
             <main>
                 <div id="tab-home" class="content-panel">
                     <div class="panel-stack">
+                        <div id="monthly-stats-container" class="text-center font-bold my-4 text-lg hidden" style="color: var(--accent);">
+                            <span id="monthly-stats-text">0.0 小時 | $0 元</span>
+                        </div>
                         <section class="panel-block">
                             <div class="section-head">
                                 <span class="section-tag">日期區間</span>
@@ -651,6 +654,10 @@
                                 <div class="field-card">
                                     <label for="cfg-reasons">自定義快速事由 (逗號分隔)</label>
                                     <textarea id="cfg-reasons" rows="3" class="p-4" placeholder="選項1, 選項2..."></textarea>
+                                </div>
+                                <div class="field-card">
+                                    <label for="cfg-hourly-rate">加班時薪 (元/小時)</label>
+                                    <input type="number" id="cfg-hourly-rate" class="p-4 font-bold" placeholder="預設值: 200">
                                 </div>
                                 <div class="info-grid">
                                     <div class="field-card">
@@ -793,6 +800,12 @@
                         } else if (action === 'reset_template') {
                             google.script.run.withSuccessHandler(handler.success).withFailureHandler(handler.failure).setupG16KTemplate();
                             resolve({ result: 'success' });
+                        } else if (action === 'get_history') {
+                            if (google.script.run.getHistory) {
+                                google.script.run.withSuccessHandler(handler.success).withFailureHandler(handler.failure).getHistory(params);
+                            } else {
+                                resolve({ result: 'error', error: 'GAS 環境不支援 getHistory 函數' });
+                            }
                         }
                     });
                 } else {
@@ -978,6 +991,8 @@
             document.getElementById('cfg-sheet-url').value = state.sheetUrl;
             document.getElementById('cfg-reasons').value = state.customReasons;
             
+            loadSettings();
+            
             document.getElementById('cfg-time-morning').value = state.normalOffTimes.morning;
             document.getElementById('cfg-time-evening').value = state.normalOffTimes.evening;
             document.getElementById('cfg-time-special').value = state.normalOffTimes.special;
@@ -989,6 +1004,7 @@
             setMode(autoMode);
             
             refreshQuickReasons();
+            fetchMonthlyStats();
         };
 
         function autoDetectMode() {
@@ -1175,12 +1191,79 @@
             if (val) document.getElementById('input-reason').value = val;
         }
 
+        function loadSettings() {
+            const rate = localStorage.getItem('hourly_rate') || '200';
+            document.getElementById('cfg-hourly-rate').value = rate;
+        }
+
+        async function fetchMonthlyStats() {
+            if (!state.apiUrl || state.apiUrl.includes('YOUR_SCRIPT_ID')) return;
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const sheetName = `${year}-${month}`;
+            
+            try {
+                const res = await apiService.call('get_history', { sheetName });
+                if (res && res.result === 'success' && res.data) {
+                    calculateTotalStats(res.data);
+                }
+            } catch (e) {
+                console.error("無法載入統計資料", e);
+            }
+        }
+
+        function calculateTotalStats(records) {
+            let totalHours = 0;
+            records.forEach(rec => {
+                const startH = parseInt(rec.startH || 0);
+                const startM = parseInt(rec.startM || 0);
+                const endH = parseInt(rec.endH || 0);
+                const endM = parseInt(rec.endM || 0);
+                const startMin = startH * 60 + startM;
+                let endMin = endH * 60 + endM;
+                
+                if (endMin < startMin) {
+                    endMin += 1440;
+                }
+                
+                const diff = endMin - startMin;
+                if (diff > 0) {
+                    const hours = Math.floor(diff / 60);
+                    const minutes = diff % 60;
+                    let alignedHours = hours;
+                    if (minutes >= 50) {
+                        alignedHours += 1.0;
+                    } else if (minutes >= 20) {
+                        alignedHours += 0.5;
+                    }
+                    totalHours += alignedHours;
+                }
+            });
+            
+            const hourlyRate = parseFloat(localStorage.getItem('hourly_rate')) || 200;
+            const totalCost = totalHours * hourlyRate;
+            
+            const container = document.getElementById('monthly-stats-container');
+            const textSpan = document.getElementById('monthly-stats-text');
+            
+            if (totalHours > 0) {
+                textSpan.innerText = `${totalHours.toFixed(1)} 小時 | $${totalCost.toLocaleString()} 元`;
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
         function saveSettings() {
             state.name = document.getElementById('cfg-name').value.trim();
             state.apiUrl = document.getElementById('cfg-url').value.trim();
             state.sheetUrl = document.getElementById('cfg-sheet-url').value.trim();
             state.customReasons = document.getElementById('cfg-reasons').value.trim();
             
+            const hourlyRate = document.getElementById('cfg-hourly-rate').value.trim();
+            localStorage.setItem('hourly_rate', hourlyRate);
+
             state.normalOffTimes = {
                 morning: document.getElementById('cfg-time-morning').value,
                 evening: document.getElementById('cfg-time-evening').value,
@@ -1196,6 +1279,7 @@
             refreshQuickReasons();
             showResultModal('success', '設定已儲存', '您的個人偏好與連結配置已成功更新。');
             showTab('home');
+            fetchMonthlyStats();
         }
 
         async function handleOCR(input) {
@@ -1222,6 +1306,7 @@
                 const data = await apiService.call('submit', params);
                 if (data.result === 'success') {
                     document.getElementById('input-reason').value = '';
+                    fetchMonthlyStats();
                     const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
                     const contentHtml = `
                         <div class="result-icon-circle icon-success">${successSvg}</div>
