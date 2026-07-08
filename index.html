@@ -1247,12 +1247,8 @@
             const container = document.getElementById('monthly-stats-container');
             const textSpan = document.getElementById('monthly-stats-text');
             
-            if (totalHours > 0) {
-                textSpan.innerText = `${totalHours.toFixed(1)} 小時 | $${totalCost.toLocaleString()} 元`;
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
+            textSpan.innerText = `${totalHours.toFixed(1)} 小時 | $${totalCost.toLocaleString()} 元`;
+            container.classList.remove('hidden');
         }
 
         function saveSettings() {
