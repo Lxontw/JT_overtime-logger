@@ -1024,12 +1024,12 @@
 
             modes.forEach(m => {
                 const offTime = parseTime(state.normalOffTimes[m]);
-                // 計算與正常下班時間的差距 (分鐘)，處理跨夜情況
-                let diff = currentMinutes - offTime;
-                if (diff < 0) diff += 24 * 60;
+                // 計算 24 小時時鐘上的最近雙向絕對時間差距 (分鐘)
+                const absDiff = Math.abs(currentMinutes - offTime);
+                const circularDiff = Math.min(absDiff, 1440 - absDiff);
                 
-                if (diff < minDiff) {
-                    minDiff = diff;
+                if (circularDiff < minDiff) {
+                    minDiff = circularDiff;
                     bestMode = m;
                 }
             });
