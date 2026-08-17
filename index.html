@@ -678,6 +678,7 @@
                         <section class="panel-block">
                             <div class="grid gap-3">
                                 <button onclick="saveSettings()" class="btn-action py-5 font-black">儲存設定並返回</button>
+                                <button onclick="batchFormatCurrentMonthReasons()" class="btn-action py-5 font-black" style="background:#0284c7; box-shadow: 0 14px 28px rgba(2, 132, 199, 0.35);">✨ 批次修復本月事由排版 (08/01-08/14)</button>
                                 <button onclick="confirmReset()" class="btn-action btn-danger py-5 font-black">重製雲端試算表範本</button>
                             </div>
                             <div id="version-label" class="text-center opacity-50 text-xs mt-5">版本載入中...</div>
@@ -750,7 +751,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.5.0 [跨夜與雙日期支援]',
+            VERSION: 'V2.6.0 [事由附帶時數與歷史批次修復]',
             FONT_STEPS: [14, 18, 22],
             DEFAULT_OFF_TIMES: {
                 morning: '17:00',
@@ -1172,12 +1173,63 @@
             
             document.getElementById('input-startDate').value = getLocalDateString(startDate);
             document.getElementById('input-endDate').value = getLocalDateString(endDate);
+            updateReasonOvertimeTag();
         }
 
         // 綁定時間變更事件，讓使用者手動修改時間時也能自動計算跨夜
         document.getElementById('input-startTime').addEventListener('change', recalculateDates);
         document.getElementById('input-endTime').addEventListener('change', recalculateDates);
         document.getElementById('input-endDate').addEventListener('change', recalculateDates);
+
+        function formatReasonWithHours(reasonText, startTimeStr, endTimeStr) {
+            if (!reasonText) return '';
+            let cleanReason = String(reasonText)
+                .replace(/\s*(\[[\s\w✓✔xX]*\]|□|☑|✅)\s*\d+(\.\d+)?\s*$/, '')
+                .trim();
+            
+            if (!startTimeStr || !endTimeStr) return cleanReason;
+
+            const [startH, startM] = startTimeStr.split(':').map(Number);
+            const [endH, endM] = endTimeStr.split(':').map(Number);
+            const startMin = startH * 60 + startM;
+            let endMin = endH * 60 + endM;
+            if (endMin < startMin) {
+                endMin += 1440;
+            }
+            const diff = endMin - startMin;
+            let durationHours = 0.0;
+            if (diff > 0) {
+                const hours = Math.floor(diff / 60);
+                const minutes = diff % 60;
+                if (minutes >= 50) {
+                    durationHours = hours + 1.0;
+                } else if (minutes >= 20) {
+                    durationHours = hours + 0.5;
+                } else {
+                    durationHours = hours * 1.0;
+                }
+            }
+            const hoursTag = `[ ] ${durationHours.toFixed(1)}`;
+            let currentWidth = 0;
+            for (let i = 0; i < cleanReason.length; i++) {
+                const code = cleanReason.charCodeAt(i);
+                currentWidth += (code > 255) ? 2 : 1;
+            }
+            const TARGET_WIDTH = 28;
+            const tagWidth = 7;
+            const neededSpaces = Math.max(2, TARGET_WIDTH - currentWidth - tagWidth);
+            const spacePad = ' '.repeat(neededSpaces);
+            return `${cleanReason}${spacePad}${hoursTag}`;
+        }
+
+        function updateReasonOvertimeTag() {
+            const reasonEl = document.getElementById('input-reason');
+            if (reasonEl && reasonEl.value.trim()) {
+                const startTimeStr = document.getElementById('input-startTime').value;
+                const endTimeStr = document.getElementById('input-endTime').value;
+                reasonEl.value = formatReasonWithHours(reasonEl.value, startTimeStr, endTimeStr);
+            }
+        }
 
         function refreshQuickReasons() {
             const select = document.getElementById('quick-reason');
@@ -1188,7 +1240,11 @@
         }
         function applyQuickReason() {
             const val = document.getElementById('quick-reason').value;
-            if (val) document.getElementById('input-reason').value = val;
+            if (val) {
+                const startTimeStr = document.getElementById('input-startTime').value;
+                const endTimeStr = document.getElementById('input-endTime').value;
+                document.getElementById('input-reason').value = formatReasonWithHours(val, startTimeStr, endTimeStr);
+            }
         }
 
         function loadSettings() {
@@ -1284,19 +1340,23 @@
         }
 
         async function submitData() {
-            const reason = document.getElementById('input-reason').value;
-            if (!reason || !state.name) {
+            const rawReason = document.getElementById('input-reason').value;
+            if (!rawReason || !state.name) {
                 return showResultModal('error', '資料不完整', '請填寫登記姓名與事由內容再行發送。');
             }
             setLoading(true);
+            const startTimeStr = document.getElementById('input-startTime').value;
+            const endTimeStr = document.getElementById('input-endTime').value;
+            const formattedReason = formatReasonWithHours(rawReason, startTimeStr, endTimeStr);
+
             const params = { 
                 name: state.name, 
                 date: document.getElementById('input-startDate').value, // 保留向下相容
                 startDate: document.getElementById('input-startDate').value,
                 endDate: document.getElementById('input-endDate').value,
-                startTime: document.getElementById('input-startTime').value, 
-                endTime: document.getElementById('input-endTime').value, 
-                reason: reason 
+                startTime: startTimeStr, 
+                endTime: endTimeStr, 
+                reason: formattedReason 
             };
             try {
                 const data = await apiService.call('submit', params);
@@ -1308,7 +1368,8 @@
                         <div class="result-icon-circle icon-success">${successSvg}</div>
                         <h3 class="modal-title" style="margin-bottom:12px;">登記成功！</h3>
                         <div style="text-align:left; font-size:0.95rem; color:#64748b; line-height:1.6; background:#f1f5f9; padding:16px; border-radius:16px; margin-bottom:24px;">
-                            ✅ 您的資料已同步至雲端試算表。
+                            ✅ 您的資料已同步至雲端試算表。<br>
+                            <span style="font-size:0.85rem; color:#0284c7; font-weight:700;">事由欄位已自動對齊填寫時數格式。</span>
                         </div>
                         <div style="display: flex; gap: 12px; width: 100%;">
                             <button style="flex:1; padding:16px; border-radius:16px; border:none; background:#94a3b8; color:white; font-weight:900; cursor:pointer;" onclick="closeResultModal()">確定</button>
@@ -1320,6 +1381,33 @@
                     showResultModal('error', '登記失敗', data.error || '伺服器拒絕了您的請求。');
                 }
             } catch (e) { showResultModal('error', '發送失敗', '請檢查連線或 GAS URL。'); } finally { setLoading(false); }
+        }
+
+        async function batchFormatCurrentMonthReasons() {
+            if (!state.apiUrl || state.apiUrl.includes('YOUR_SCRIPT_ID')) {
+                return showResultModal('error', '未設定 API', '請先設定正確的 GAS 服務 URL。');
+            }
+            if (!confirm('確定要批次修復本月份所有已登記資料的事由排版嗎？\n這將自動計算 08/01 以來的每筆時數並補齊 [ ] X.X 排版。')) {
+                return;
+            }
+            setLoading(true);
+            try {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const sheetName = `${year}-${month}`;
+                const res = await apiService.call('batch_format_reasons', { sheetName });
+                if (res.result === 'success') {
+                    showResultModal('success', '批次修復成功', `已成功修復工作表 [${res.sheetName}] 共 ${res.updatedCount} 筆事由資料！`);
+                    fetchMonthlyStats();
+                } else {
+                    showResultModal('error', '修復失敗', res.error || '無法完成批次修復。');
+                }
+            } catch (e) {
+                showResultModal('error', '連線失敗', '請檢查網路連線或 GAS URL。');
+            } finally {
+                setLoading(false);
+            }
         }
 
         function setLoading(val) { document.getElementById('loading-overlay').classList.toggle('hidden', !val); }
