@@ -1184,7 +1184,7 @@
         function formatReasonWithHours(reasonText, startTimeStr, endTimeStr) {
             if (!reasonText) return '';
             let cleanReason = String(reasonText)
-                .replace(/\s*(\[[\s\w✓✔xX]*\]|□|☑|✅)\s*\d+(\.\d+)?\s*$/, '')
+                .replace(/[\s\u3000]*(\[[\s\w✓✔xX]*\]|□|☑|✅)[\s\u3000]*\d+(\.\d+)?[\s\u3000]*$/, '')
                 .trim();
             
             if (!startTimeStr || !endTimeStr) return cleanReason;
@@ -1210,15 +1210,17 @@
                 }
             }
             const hoursTag = `[ ] ${durationHours.toFixed(1)}`;
-            let currentWidth = 0;
+            
+            let reasonEm = 0;
             for (let i = 0; i < cleanReason.length; i++) {
                 const code = cleanReason.charCodeAt(i);
-                currentWidth += (code > 255) ? 2 : 1;
+                reasonEm += (code > 255) ? 1.0 : 0.5;
             }
-            const TARGET_WIDTH = 28;
-            const tagWidth = 7;
-            const neededSpaces = Math.max(2, TARGET_WIDTH - currentWidth - tagWidth);
-            const spacePad = ' '.repeat(neededSpaces);
+            const TARGET_EM = 19.5;
+            const tagEm = 2.5;
+            const neededFullSpaces = Math.max(1, Math.floor(TARGET_EM - reasonEm - tagEm));
+            const hasHalfSpace = (TARGET_EM - reasonEm - tagEm - neededFullSpaces) >= 0.4 ? ' ' : '';
+            const spacePad = '\u3000'.repeat(neededFullSpaces) + hasHalfSpace;
             return `${cleanReason}${spacePad}${hoursTag}`;
         }
 
