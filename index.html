@@ -1354,16 +1354,38 @@
             if (!rawReason || !state.name) {
                 return showResultModal('error', '資料不完整', '請填寫登記姓名與事由內容再行發送。');
             }
-            setLoading(true);
+
             const startTimeStr = document.getElementById('input-startTime').value;
             const endTimeStr = document.getElementById('input-endTime').value;
+            const startDateStr = document.getElementById('input-startDate').value;
+            const endDateStr = document.getElementById('input-endDate').value;
+
+            // [防呆] 0 小時無效登記攔截（0 小時登記無意義）
+            if (startDateStr === endDateStr && startTimeStr === endTimeStr) {
+                return showResultModal('warning', '無效的加班時間', '開始時間與結束時間相同（加班時數為 0 小時，登記沒有意義）。請確認實際加班結束時間後再送出。');
+            }
+
+            if (startTimeStr && endTimeStr) {
+                const [sH, sM] = startTimeStr.split(':').map(Number);
+                const [eH, eM] = endTimeStr.split(':').map(Number);
+                let startTotal = sH * 60 + sM;
+                let endTotal = eH * 60 + eM;
+                if (startDateStr !== endDateStr || endTotal < startTotal) {
+                    endTotal += 1440;
+                }
+                if (endTotal - startTotal <= 0) {
+                    return showResultModal('warning', '無效的加班時間', '計算之加班時數為 0 小時（登記沒有意義）。請確認時間後再送出。');
+                }
+            }
+
+            setLoading(true);
             const formattedReason = formatReasonWithHours(rawReason, startTimeStr, endTimeStr);
 
             const params = { 
                 name: state.name, 
-                date: document.getElementById('input-startDate').value, // 保留向下相容
-                startDate: document.getElementById('input-startDate').value,
-                endDate: document.getElementById('input-endDate').value,
+                date: startDateStr, // 保留向下相容
+                startDate: startDateStr,
+                endDate: endDateStr,
                 startTime: startTimeStr, 
                 endTime: endTimeStr, 
                 reason: formattedReason 
