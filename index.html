@@ -1183,6 +1183,14 @@
 
         function formatReasonWithHours(reasonText, startTimeStr, endTimeStr) {
             if (!reasonText) return '';
+            
+            // 智慧偵測並保留原有中括號內的打勾記號（如 [v], [V], [x], [✓] 等）
+            let checkMark = ' ';
+            const checkMatch = String(reasonText).match(/\[([\s\w✓✔xX]*)\]\s*\d+(\.\d+)?[\s\u3000]*$/);
+            if (checkMatch && checkMatch[1].trim()) {
+                checkMark = checkMatch[1].trim();
+            }
+
             let cleanReason = String(reasonText)
                 .replace(/[\s\u3000]*(\[[\s\w✓✔xX]*\]|□|☑|✅)[\s\u3000]*\d+(\.\d+)?[\s\u3000]*$/, '')
                 .trim();
@@ -1209,7 +1217,7 @@
                     durationHours = hours * 1.0;
                 }
             }
-            const hoursTag = `[ ] ${durationHours.toFixed(1)}`;
+            const hoursTag = `[${checkMark}] ${durationHours.toFixed(1)}`;
             
             let reasonEm = 0;
             for (let i = 0; i < cleanReason.length; i++) {
