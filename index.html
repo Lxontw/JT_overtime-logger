@@ -609,7 +609,10 @@
 
                         <section class="panel-block">
                             <div class="section-head">
-                                <span class="section-tag">事由 / 備註內容</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="section-tag">事由 / 備註內容</span>
+                                    <span id="preview-overtime-hours" class="text-xs font-bold px-2.5 py-1 rounded-full" style="background: rgba(14, 165, 233, 0.15); color: #0284c7;">⏱️ 本次加班：0.0 小時</span>
+                                </div>
                                 <button onclick="document.getElementById('file-ocr').click()" class="w-11 h-11 rounded-2xl text-white flex items-center justify-center shadow-lg theme-dynamic-bg" title="影像文字辨識">
                                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                 </button>
@@ -751,7 +754,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.6.0 [事由附帶時數與歷史批次修復]',
+            VERSION: 'V2.7.0 [輸入框純淨化與試算表原生動態加總]',
             FONT_STEPS: [14, 18, 22],
             DEFAULT_OFF_TIMES: {
                 morning: '17:00',
@@ -1173,15 +1176,15 @@
             
             document.getElementById('input-startDate').value = getLocalDateString(startDate);
             document.getElementById('input-endDate').value = getLocalDateString(endDate);
-            updateReasonOvertimeTag();
+            updateOvertimePreviewBadge();
         }
 
-        // 綁定時間變更事件，讓使用者手動修改時間時也能自動計算跨夜
+        // 綁定時間變更事件，讓使用者手動修改時間時也能自動計算跨夜並更新預估時數
         document.getElementById('input-startTime').addEventListener('change', recalculateDates);
         document.getElementById('input-endTime').addEventListener('change', recalculateDates);
         document.getElementById('input-endDate').addEventListener('change', recalculateDates);
 
-        function formatReasonWithHours(reasonText, startTimeStr, endTimeStr) {
+        function formatReasonWithHours(reasonText, startTimeStr, endTimeStr, startDateStr, endDateStr) {
             if (!reasonText) return '';
             
             // 智慧偵測並保留原有中括號內的打勾記號（如 [v], [V], [x], [✓] 等）
@@ -1201,7 +1204,7 @@
             const [endH, endM] = endTimeStr.split(':').map(Number);
             const startMin = startH * 60 + startM;
             let endMin = endH * 60 + endM;
-            if (endMin < startMin) {
+            if ((startDateStr && endDateStr && startDateStr !== endDateStr) || endMin < startMin) {
                 endMin += 1440;
             }
             const diff = endMin - startMin;
@@ -1232,13 +1235,38 @@
             return `${cleanReason}${spacePad}${hoursTag}`;
         }
 
-        function updateReasonOvertimeTag() {
-            const reasonEl = document.getElementById('input-reason');
-            if (reasonEl && reasonEl.value.trim()) {
-                const startTimeStr = document.getElementById('input-startTime').value;
-                const endTimeStr = document.getElementById('input-endTime').value;
-                reasonEl.value = formatReasonWithHours(reasonEl.value, startTimeStr, endTimeStr);
+        function updateOvertimePreviewBadge() {
+            const startTimeStr = document.getElementById('input-startTime').value;
+            const endTimeStr = document.getElementById('input-endTime').value;
+            const startDateStr = document.getElementById('input-startDate').value;
+            const endDateStr = document.getElementById('input-endDate').value;
+            const badge = document.getElementById('preview-overtime-hours');
+            if (!badge) return;
+            if (!startTimeStr || !endTimeStr) {
+                badge.innerText = '⏱️ 本次加班：0.0 小時';
+                return;
             }
+            const [sH, sM] = startTimeStr.split(':').map(Number);
+            const [eH, eM] = endTimeStr.split(':').map(Number);
+            const startMin = sH * 60 + sM;
+            let endMin = eH * 60 + eM;
+            if ((startDateStr && endDateStr && startDateStr !== endDateStr) || endMin < startMin) {
+                endMin += 1440;
+            }
+            const diff = endMin - startMin;
+            let durationHours = 0.0;
+            if (diff > 0) {
+                const hours = Math.floor(diff / 60);
+                const minutes = diff % 60;
+                if (minutes >= 50) {
+                    durationHours = hours + 1.0;
+                } else if (minutes >= 20) {
+                    durationHours = hours + 0.5;
+                } else {
+                    durationHours = hours * 1.0;
+                }
+            }
+            badge.innerText = `⏱️ 本次加班：${durationHours.toFixed(1)} 小時`;
         }
 
         function refreshQuickReasons() {
@@ -1251,9 +1279,7 @@
         function applyQuickReason() {
             const val = document.getElementById('quick-reason').value;
             if (val) {
-                const startTimeStr = document.getElementById('input-startTime').value;
-                const endTimeStr = document.getElementById('input-endTime').value;
-                document.getElementById('input-reason').value = formatReasonWithHours(val, startTimeStr, endTimeStr);
+                document.getElementById('input-reason').value = val;
             }
         }
 
@@ -1379,7 +1405,7 @@
             }
 
             setLoading(true);
-            const formattedReason = formatReasonWithHours(rawReason, startTimeStr, endTimeStr);
+            const formattedReason = formatReasonWithHours(rawReason, startTimeStr, endTimeStr, startDateStr, endDateStr);
 
             const params = { 
                 name: state.name, 
