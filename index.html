@@ -611,7 +611,7 @@
                             <div class="section-head">
                                 <div class="flex items-center gap-2">
                                     <span class="section-tag">事由 / 備註內容</span>
-                                    <span id="preview-overtime-hours" class="text-xs font-bold px-2.5 py-1 rounded-full" style="background: rgba(14, 165, 233, 0.15); color: #0284c7;">⏱️ 0.0 小時</span>
+                                    <span id="preview-overtime-hours" class="text-xs font-black px-3 py-1 rounded-full shadow-sm" style="background: #0284c7; color: #ffffff; letter-spacing: 0.5px;">0.0 小時</span>
                                 </div>
                                 <button onclick="document.getElementById('file-ocr').click()" class="w-11 h-11 rounded-2xl text-white flex items-center justify-center shadow-lg theme-dynamic-bg" title="影像文字辨識">
                                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
@@ -754,7 +754,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.7.0 [輸入框純淨化與試算表原生動態加總]',
+            VERSION: 'V2.7.2 [徽章精簡純時數與高對比視覺]',
             FONT_STEPS: [14, 18, 22],
             DEFAULT_OFF_TIMES: {
                 morning: '17:00',
@@ -1179,8 +1179,8 @@
             updateOvertimePreviewBadge();
         }
 
-        // 綁定時間與日期變更事件：支援 input 與 change，確保即時毫秒級反應
-        ['input', 'change'].forEach(evt => {
+        // 綁定時間與日期變更事件：支援 input, change, keyup，確保即時毫秒級反應
+        ['input', 'change', 'keyup'].forEach(evt => {
             document.getElementById('input-startTime').addEventListener(evt, updateOvertimePreviewBadge);
             document.getElementById('input-endTime').addEventListener(evt, updateOvertimePreviewBadge);
             document.getElementById('input-startDate').addEventListener(evt, updateOvertimePreviewBadge);
@@ -1250,13 +1250,13 @@
             const badge = document.getElementById('preview-overtime-hours');
             if (!badge) return;
             if (!startTimeStr || !endTimeStr) {
-                badge.innerText = '⏱️ 0.0 小時';
+                badge.innerText = '0.0 小時';
                 return;
             }
             const [sH, sM] = startTimeStr.split(':').map(Number);
             const [eH, eM] = endTimeStr.split(':').map(Number);
             if (isNaN(sH) || isNaN(sM) || isNaN(eH) || isNaN(eM)) {
-                badge.innerText = '⏱️ 0.0 小時';
+                badge.innerText = '0.0 小時';
                 return;
             }
             const startMin = sH * 60 + sM;
@@ -1277,7 +1277,7 @@
                     durationHours = hours * 1.0;
                 }
             }
-            badge.innerText = `⏱️ ${durationHours.toFixed(1)} 小時`;
+            badge.innerText = `${durationHours.toFixed(1)} 小時`;
         }
 
         function refreshQuickReasons() {
