@@ -773,7 +773,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.7.3 [拍照辨識修復與多模型備援]',
+            VERSION: 'V2.7.4 [極速批次寫入與連線自癒]',
             FONT_STEPS: [14, 18, 22],
             DEFAULT_OFF_TIMES: {
                 morning: '17:00',
@@ -837,7 +837,11 @@
                         formData.append('action', action);
                         for (let key in params) formData.append(key, params[key]);
                         try {
-                            const res = await fetch(state.apiUrl, { method: 'POST', body: formData });
+                            const res = await fetch(state.apiUrl, { 
+                                method: 'POST', 
+                                body: formData,
+                                redirect: 'follow'
+                            });
                             return await res.json();
                         } catch (e) {
                             console.error("Fetch failed", e);
@@ -1522,29 +1526,71 @@
                 endTime: endTimeStr, 
                 reason: formattedReason 
             };
+            let isVerifiedSuccess = false;
             try {
                 const data = await apiService.call('submit', params);
-                if (data.result === 'success') {
-                    document.getElementById('input-reason').value = '';
-                    fetchMonthlyStats();
-                    const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                    const contentHtml = `
-                        <div class="result-icon-circle icon-success">${successSvg}</div>
-                        <h3 class="modal-title" style="margin-bottom:12px;">登記成功！</h3>
-                        <div style="text-align:left; font-size:0.95rem; color:#64748b; line-height:1.6; background:#f1f5f9; padding:16px; border-radius:16px; margin-bottom:24px;">
-                            ✅ 您的資料已同步至雲端試算表。<br>
-                            <span style="font-size:0.85rem; color:#0284c7; font-weight:700;">事由欄位已自動對齊填寫時數格式。</span>
-                        </div>
-                        <div style="display: flex; gap: 12px; width: 100%;">
-                            <button style="flex:1; padding:16px; border-radius:16px; border:none; background:#94a3b8; color:white; font-weight:900; cursor:pointer;" onclick="closeResultModal()">確定</button>
-                            <button style="flex:1; padding:16px; border-radius:16px; border:none; background:var(--accent); color:white; font-weight:900; cursor:pointer;" onclick="openPreview()">預覽結果</button>
-                        </div>
-                    `;
-                    showCustomModal(contentHtml);
+                if (data && data.result === 'success') {
+                    isVerifiedSuccess = true;
+                } else if (data && data.error && data.error.includes('後端服務連線失敗')) {
+                    // 行動裝置跨域 302 重定向可能引發假性中斷，進行自我驗證
+                    await new Promise(r => setTimeout(r, 1200));
+                    try {
+                        const verify = await apiService.call('get_history', {});
+                        if (verify && verify.result === 'success' && Array.isArray(verify.data) && verify.data.length > 0) {
+                            const last = verify.data[verify.data.length - 1];
+                            const [sH, sM] = (startTimeStr || '').split(':');
+                            const [eH, eM] = (endTimeStr || '').split(':');
+                            if (last.startH === sH && last.endH === eH) {
+                                isVerifiedSuccess = true;
+                            }
+                        }
+                    } catch (vfErr) {}
+                    if (!isVerifiedSuccess) {
+                        showResultModal('error', '登記失敗', data.error || '伺服器拒絕了您的請求。');
+                    }
                 } else {
-                    showResultModal('error', '登記失敗', data.error || '伺服器拒絕了您的請求。');
+                    showResultModal('error', '登記失敗', (data && data.error) ? data.error : '伺服器拒絕了您的請求。');
                 }
-            } catch (e) { showResultModal('error', '發送失敗', '請檢查連線或 GAS URL。'); } finally { setLoading(false); }
+            } catch (e) {
+                // 網路異常或重定向異常時的自我驗證
+                try {
+                    await new Promise(r => setTimeout(r, 1200));
+                    const verify = await apiService.call('get_history', {});
+                    if (verify && verify.result === 'success' && Array.isArray(verify.data) && verify.data.length > 0) {
+                        const last = verify.data[verify.data.length - 1];
+                        const [sH, sM] = (startTimeStr || '').split(':');
+                        const [eH, eM] = (endTimeStr || '').split(':');
+                        if (last.startH === sH && last.endH === eH) {
+                            isVerifiedSuccess = true;
+                        }
+                    }
+                } catch (verifyErr) {}
+
+                if (!isVerifiedSuccess) {
+                    showResultModal('error', '發送失敗', '請檢查連線或 GAS URL。');
+                }
+            } finally {
+                setLoading(false);
+            }
+
+            if (isVerifiedSuccess) {
+                document.getElementById('input-reason').value = '';
+                fetchMonthlyStats();
+                const successSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                const contentHtml = `
+                    <div class="result-icon-circle icon-success">${successSvg}</div>
+                    <h3 class="modal-title" style="margin-bottom:12px;">登記成功！</h3>
+                    <div style="text-align:left; font-size:0.95rem; color:#64748b; line-height:1.6; background:#f1f5f9; padding:16px; border-radius:16px; margin-bottom:24px;">
+                        ✅ 您的資料已同步至雲端試算表。<br>
+                        <span style="font-size:0.85rem; color:#0284c7; font-weight:700;">事由欄位已自動對齊填寫時數格式。</span>
+                    </div>
+                    <div style="display: flex; gap: 12px; width: 100%;">
+                        <button style="flex:1; padding:16px; border-radius:16px; border:none; background:#94a3b8; color:white; font-weight:900; cursor:pointer;" onclick="closeResultModal()">確定</button>
+                        <button style="flex:1; padding:16px; border-radius:16px; border:none; background:var(--accent); color:white; font-weight:900; cursor:pointer;" onclick="openPreview()">預覽結果</button>
+                    </div>
+                `;
+                showCustomModal(contentHtml);
+            }
         }
 
         async function batchFormatCurrentMonthReasons() {
