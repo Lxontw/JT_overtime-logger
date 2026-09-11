@@ -760,7 +760,7 @@
                 <span class="font-bold text-sm">載入原始試算表中...</span>
                 <span class="text-xs opacity-70 mt-1 max-w-[200px] text-center">如果一直沒有畫面顯示，請確認權限是否有公開或至設定更改預覽網址</span>
             </div>
-            <iframe id="preview-iframe" class="relative z-10 w-full h-full border-none bg-transparent" src=""></iframe>
+            <iframe id="preview-iframe" class="relative z-10 w-full h-full border-none bg-transparent" src="" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
         </div>
     </div>
 
@@ -773,7 +773,7 @@
         const CONFIG = {
             GAS_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec',
             DEFAULT_REASONS: "交接輪值,百貨類處理,教科書處理,數位印刷,臨時急件",
-            VERSION: 'V2.7.4 [極速批次寫入與連線自癒]',
+            VERSION: 'V2.7.5 [原生內嵌預覽防跳窗修復]',
             FONT_STEPS: [14, 18, 22],
             DEFAULT_OFF_TIMES: {
                 morning: '17:00',
@@ -887,12 +887,39 @@
             document.body.style.overflow = '';
         }
 
+        function getSheetEmbedUrl(rawUrl) {
+            if (!rawUrl) return '';
+            let url = rawUrl.trim();
+            // 若為發布到網路的 pubhtml 或原生 htmlembed，直接返回
+            if (url.includes('/pubhtml') || url.includes('/htmlembed')) {
+                return url;
+            }
+            // 擷取 Google 試算表 ID
+            const sheetIdMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (sheetIdMatch && sheetIdMatch[1]) {
+                const sheetId = sheetIdMatch[1];
+                const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
+                const gidParam = gidMatch ? `&gid=${gidMatch[1]}` : '';
+                // 轉為 Google 官方無選單之 preview 嵌入規格，徹底杜絕 frame-busting 跳轉新分頁
+                return `https://docs.google.com/spreadsheets/d/${sheetId}/preview?rm=minimal${gidParam}`;
+            }
+            // 若使用者僅填寫 Sheet ID
+            if (/^[a-zA-Z0-9-_]{30,}$/.test(url)) {
+                return `https://docs.google.com/spreadsheets/d/${url}/preview?rm=minimal`;
+            }
+            return url;
+        }
+
         window.openPreview = () => {
-            if (!state.sheetUrl) { alert('請先至「設定」填寫 Google Sheet 預覽網址！'); return; }
+            if (!state.sheetUrl) { 
+                alert('請先至「設定 (齒輪圖示)」填寫 Google Sheet 預覽網址！'); 
+                return; 
+            }
             closeResultModal();
             const previewModal = document.getElementById('preview-modal');
             const previewIframe = document.getElementById('preview-iframe');
-            previewIframe.src = state.sheetUrl;
+            const safeEmbedUrl = getSheetEmbedUrl(state.sheetUrl);
+            previewIframe.src = safeEmbedUrl;
             previewModal.classList.remove('hidden');
             previewModal.classList.add('flex');
             document.body.style.overflow = 'hidden';
